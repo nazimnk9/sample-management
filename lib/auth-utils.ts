@@ -122,9 +122,9 @@ export async function getCurrentUserRole(): Promise<string | null> {
 }
 
 export function canAccessFeature(role: string | null, feature: string): boolean {
-  // ADMINISTRATOR cannot access: create company, create buyer, create project, admin user list, create user
+  // ADMINISTRATOR cannot access: admin user list only
   if (role === "ADMINISTRATOR") {
-    const restrictedFeatures = ["create_company", "create_buyer", "create_project", "admin_user_list", "create_user"]
+    const restrictedFeatures = ["admin_user_list"]
     return !restrictedFeatures.includes(feature)
   }
 

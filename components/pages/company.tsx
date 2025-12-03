@@ -500,7 +500,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Plus, Eye, SettingsIcon, X, AlertCircle, Loader2 } from "lucide-react"
-import { getCookie, apiCall, getCurrentUserRole, canAccessFeature } from "@/lib/auth-utils"
+import { getCookie, apiCall } from "@/lib/auth-utils"
 
 interface Company {
   id: number
@@ -530,7 +530,6 @@ export default function CompanyPage() {
   const [settingsModal, setSettingsModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [userRole, setUserRole] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -540,9 +539,6 @@ export default function CompanyPage() {
           router.push("/login")
           return
         }
-
-        const role = await getCurrentUserRole()
-        setUserRole(role)
 
         const response = await apiCall("/organizations/my_companys/")
         if (!response.ok) {
@@ -584,14 +580,12 @@ export default function CompanyPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Companies</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage and monitor all partner companies</p>
         </div>
-        {canAccessFeature(userRole, "create_company") && (
-          <Link href="/company/add" className="w-full sm:w-auto">
-            <Button className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add New Company
-            </Button>
-          </Link>
-        )}
+        <Link href="/company/add" className="w-full sm:w-auto">
+          <Button className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add New Company
+          </Button>
+        </Link>
       </div>
 
       <div className="mb-6 relative">

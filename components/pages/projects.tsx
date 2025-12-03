@@ -215,7 +215,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Plus, Eye, SettingsIcon, X } from "lucide-react"
-import { getCookie, getCurrentUserRole, canAccessFeature } from "@/lib/auth-utils"
+import { getCookie } from "@/lib/auth-utils"
 
 const projects = [
   { id: 1, name: "Summer Collection 2024", company: "TechStyle Co.", samples: 45, status: "In Progress" },
@@ -229,15 +229,11 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<any>(null)
   const [detailsModal, setDetailsModal] = useState(false)
   const [settingsModal, setSettingsModal] = useState(false)
-  const [userRole, setUserRole] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUserRole = async () => {
       const token = getCookie("access_token")
       if (!token) return
-
-      const role = await getCurrentUserRole()
-      setUserRole(role)
     }
 
     fetchUserRole()
@@ -252,12 +248,10 @@ export default function ProjectsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Projects</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage and monitor sample projects</p>
         </div>
-        {canAccessFeature(userRole, "create_project") && (
-          <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add New Project
-          </Button>
-        )}
+        <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add New Project
+        </Button>
       </div>
 
       {/* Search Bar */}
