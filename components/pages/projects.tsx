@@ -4235,7 +4235,7 @@ interface Project {
   id: number
   uid: string
   name: string
-  company: number
+  company: Company
   started_at: string
   will_finish_at: string
   images: ProjectImage[]
@@ -4291,8 +4291,8 @@ function ImageUploadModal({ isOpen, onClose, existingImages, onImagesUpload }: I
           let quality = 0.9
 
           while (
-            (canvas.toBlob((blob) => {}, "image/jpeg", quality),
-            canvas.toDataURL("image/jpeg", quality).length / 1024 > 999) &&
+            (canvas.toBlob((blob) => { }, "image/jpeg", quality),
+              canvas.toDataURL("image/jpeg", quality).length / 1024 > 999) &&
             quality > 0.1
           ) {
             quality -= 0.1
@@ -4548,19 +4548,20 @@ export default function ProjectsPage() {
         setSelectedProject(data)
         const convertToDatetimeLocal = (isoString: string) => {
           if (!isoString) return ""
-          const date = new Date(isoString)
-          const year = date.getFullYear()
-          const month = String(date.getMonth() + 1).padStart(2, "0")
-          const day = String(date.getDate()).padStart(2, "0")
-          const hours = String(date.getHours()).padStart(2, "0")
-          const minutes = String(date.getMinutes()).padStart(2, "0")
-          return `${year}-${month}-${day}T${hours}:${minutes}`
+          // const date = new Date(isoString)
+          // const year = date.getFullYear()
+          // const month = String(date.getMonth() + 1).padStart(2, "0")
+          // const day = String(date.getDate()).padStart(2, "0")
+          // const hours = String(date.getHours()).padStart(2, "0")
+          // const minutes = String(date.getMinutes()).padStart(2, "0")
+          // return `${year}-${month}-${day}T${hours}:${minutes}`
+           return isoString.slice(0, 16);
         }
         setFormData({
           name: data.name,
           started_at: convertToDatetimeLocal(data.started_at),
           will_finish_at: convertToDatetimeLocal(data.will_finish_at),
-          company_uid: data.company?.toString() || "",
+          company_uid: data.company?.uid || "",
           buyer_uids: data.buyers?.map((b: ProjectBuyer) => b.uid) || [],
         })
         setSettingsModal(true)
@@ -4585,7 +4586,7 @@ export default function ProjectsPage() {
 
       const convertToISO = (datetimeLocal: string) => {
         if (!datetimeLocal) return ""
-        return new Date(datetimeLocal).toISOString()
+       return datetimeLocal.slice(0, 16);
       }
 
       const submitData = {
@@ -4710,6 +4711,18 @@ export default function ProjectsPage() {
     )
   }
 
+  const formatDatetimeAMPM = (isoString: string) => {
+  if (!isoString) return "";
+  const [datePart, timePart] = isoString.split("T"); // "YYYY-MM-DD" and "HH:MM:SS"
+  if (!timePart) return datePart;
+
+  let [hours, minutes] = timePart.split(":");
+  let h = parseInt(hours, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12; // convert 0->12 for 12 AM
+  return `${datePart} ${h}:${minutes} ${ampm}`;
+};
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -4772,7 +4785,7 @@ export default function ProjectsPage() {
               <div className="space-y-3 mb-4">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Company</p>
-                  <p className="text-sm font-medium text-foreground">{companyMap[project.company] || "N/A"}</p>
+                  <p className="text-sm font-medium text-foreground">{project.company.name || "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Images</p>
@@ -4831,19 +4844,19 @@ export default function ProjectsPage() {
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Company</p>
                     <p className="text-base sm:text-lg font-semibold text-foreground">
-                      {companyMap[selectedProject.company] || "N/A"}
+                      {selectedProject.company.name || ""}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Started At</p>
                     <p className="text-base sm:text-lg font-semibold text-foreground">
-                      {new Date(selectedProject.started_at).toLocaleDateString()}
+                      {formatDatetimeAMPM(selectedProject.started_at)}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Will Finish At</p>
                     <p className="text-base sm:text-lg font-semibold text-foreground">
-                      {new Date(selectedProject.will_finish_at).toLocaleDateString()}
+                      {formatDatetimeAMPM(selectedProject.will_finish_at)}
                     </p>
                   </div>
                 </div>
@@ -4886,7 +4899,7 @@ export default function ProjectsPage() {
       {/* Settings Modal */}
       {settingsModal && selectedProject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+          <Card className="w-full max-w-3xl border-border max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
               <CardTitle className="text-lg sm:text-xl line-clamp-2">Update Project - {selectedProject.name}</CardTitle>
               <button onClick={() => setSettingsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
@@ -4903,9 +4916,8 @@ export default function ProjectsPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleFormChange}
-                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name[0]}</p>}
                 </div>
@@ -4918,9 +4930,8 @@ export default function ProjectsPage() {
                     name="started_at"
                     value={formData.started_at}
                     onChange={handleFormChange}
-                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.started_at ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.started_at ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.started_at && <p className="text-sm text-red-600 mt-1">{fieldErrors.started_at[0]}</p>}
                 </div>
@@ -4933,11 +4944,10 @@ export default function ProjectsPage() {
                     name="will_finish_at"
                     value={formData.will_finish_at}
                     onChange={handleFormChange}
-                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.will_finish_at
+                    className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.will_finish_at
                         ? "border-red-500 focus:ring-red-500"
                         : "border-border focus:ring-primary"
-                    }`}
+                      }`}
                   />
                   {fieldErrors.will_finish_at && (
                     <p className="text-sm text-red-600 mt-1">{fieldErrors.will_finish_at[0]}</p>
@@ -4946,17 +4956,19 @@ export default function ProjectsPage() {
 
                 {/* Company - Only for SUPER_ADMIN */}
                 {canAccessFeature(userRole, "company_selection") && (
-                  <div>
+                  <div className="relative">
                     <label className="text-sm font-medium text-foreground block mb-2">Company</label>
+                    <span className="pointer-events-none absolute right-4 top-11.5 -translate-y-1/2 text-gray-500 text-sm">
+                      <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    </span>
                     <select
                       name="company_uid"
                       value={formData.company_uid}
                       onChange={handleFormChange}
-                      className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                        fieldErrors.company_uid
+                      className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.company_uid
                           ? "border-red-500 focus:ring-red-500"
                           : "border-border focus:ring-primary"
-                      }`}
+                        }`}
                     >
                       <option value="">Select a company</option>
                       {allCompanies.map((company) => (
@@ -4978,11 +4990,10 @@ export default function ProjectsPage() {
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${
-                          fieldErrors.buyer_uids
+                        className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${fieldErrors.buyer_uids
                             ? "border-red-500 focus:ring-red-500"
                             : "border-border focus:ring-primary"
-                        }`}
+                          }`}
                       >
                         <span className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}>
                           {formData.buyer_uids.length > 0
@@ -5021,7 +5032,7 @@ export default function ProjectsPage() {
                   <Button
                     type="button"
                     onClick={() => setImageUploadOpen(true)}
-                    className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                    className="w-88 bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
                     Manage Images

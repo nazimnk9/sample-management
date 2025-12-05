@@ -2230,7 +2230,7 @@ export default function AddProjectPage() {
                   <Button
                     type="button"
                     onClick={() => setImageUploadOpen(true)}
-                    className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                    className="w-1/2 bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
                     Upload Images ({imageUids.length})
@@ -2239,7 +2239,7 @@ export default function AddProjectPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-6">
+              <div className="flex flex-col sm:flex-row gap-7.5 pt-6">
                 <Button type="submit" disabled={isLoading} className="flex-1 bg-primary hover:bg-primary/90 text-white">
                   {isLoading ? (
                     <>
