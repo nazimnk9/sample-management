@@ -3222,6 +3222,4590 @@
 // }
 
 
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical } from "lucide-react"
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall } from "@/lib/auth-utils"
+// import Link from "next/link"
+// import { useRouter } from "next/navigation"
+
+// interface Space {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   status: string
+//   type: string
+//   company: number
+//   created_by: number
+//   parent: string | null
+// }
+
+// interface SampleImage {
+//   id: number
+//   uid: string
+//   file: string
+//   file_name: string
+// }
+
+// interface SampleBuyer {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleProject {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleNote {
+//   id: number
+//   uid: string
+//   title: string
+// }
+
+// interface Sample {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   style_no: string
+//   sku_no: string
+//   item: string
+//   fabrication: string
+//   weight: string
+//   color: string
+//   size: string
+//   comments: string
+//   arrival_date: string
+//   images: SampleImage[]
+//   buyers: SampleBuyer[]
+//   projects: SampleProject[]
+//   notes: SampleNote[]
+// }
+
+// export default function SpacePage() {
+//   const { toast } = useToast()
+//   const router = useRouter()
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Modals
+//   const [editModal, setEditModal] = useState(false)
+//   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
+//   const [sampleEditModal, setSampleEditModal] = useState(false)
+//   const [sampleDeleteConfirmModal, setSampleDeleteConfirmModal] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+
+//   // Edit form
+//   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState<string>("")
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+
+//   // Sample edit form
+//   const [sampleEditFormData, setSampleEditFormData] = useState({
+//     name: "",
+//     description: "",
+//     style_no: "",
+//     sku_no: "",
+//     item: "",
+//     fabrication: "",
+//     weight: "",
+//     color: "",
+//     size: "",
+//     comments: "",
+//     arrival_date: "",
+//   })
+//   const [selectedSampleBuyers, setSelectedSampleBuyers] = useState<string[]>([])
+//   const [selectedSampleProjects, setSelectedSampleProjects] = useState<string[]>([])
+//   const [selectedSampleNotes, setSelectedSampleNotes] = useState<string[]>([])
+//   const [buyers, setBuyers] = useState<SampleBuyer[]>([])
+//   const [projects, setProjects] = useState<SampleProject[]>([])
+//   const [notes, setNotes] = useState<SampleNote[]>([])
+//   const [isSavingSample, setIsSavingSample] = useState(false)
+//   const [isDeletingSample, setIsDeletingSample] = useState(false)
+
+//   useEffect(() => {
+//     fetchSpacesAndSamples()
+//   }, [currentParentUid])
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       // Fetch spaces
+//       const spacesUrl = currentParentUid
+//         ? `/sample_manager/storage/?type=SPACE&parent_uid=${currentParentUid}`
+//         : `/sample_manager/storage/?type=SPACE`
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       // Fetch samples if there's a current parent
+//       if (currentParentUid) {
+//         const samplesResponse = await apiCall(`/sample_manager/sample/${currentParentUid}`)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch spaces and samples",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//     }
+//   }
+
+//   const handleEditClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "PUT",
+//         body: formData,
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setDeleteConfirmModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleConfirmDelete = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, { method: "DELETE" })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   const handleEditSampleClick = async (sample: Sample) => {
+//     setSelectedSample(sample)
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSampleEditFormData({
+//           name: data.name,
+//           description: data.description,
+//           style_no: data.style_no,
+//           sku_no: data.sku_no,
+//           item: data.item,
+//           fabrication: data.fabrication,
+//           weight: data.weight,
+//           color: data.color,
+//           size: data.size,
+//           comments: data.comments,
+//           arrival_date: data.arrival_date,
+//         })
+//         setSelectedSampleBuyers(data.buyers?.map((b: SampleBuyer) => b.uid) || [])
+//         setSelectedSampleProjects(data.projects?.map((p: SampleProject) => p.uid) || [])
+//         setSelectedSampleNotes(data.notes?.map((n: SampleNote) => n.uid) || [])
+
+//         // Fetch buyers, projects, and notes for the modal
+//         const buyersResp = await apiCall("/sample_manager/buyer/")
+//         if (buyersResp.ok) {
+//           const buyersData = await buyersResp.json()
+//           setBuyers(Array.isArray(buyersData) ? buyersData : buyersData.results || [])
+//         }
+
+//         const projectsResp = await apiCall("/sample_manager/project/")
+//         if (projectsResp.ok) {
+//           const projectsData = await projectsResp.json()
+//           setProjects(Array.isArray(projectsData) ? projectsData : projectsData.results || [])
+//         }
+
+//         const notesResp = await apiCall("/sample_manager/note/")
+//         if (notesResp.ok) {
+//           const notesData = await notesResp.json()
+//           setNotes(Array.isArray(notesData) ? notesData : notesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     }
+//     setSampleEditModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleSaveSampleEdit = async () => {
+//     if (!selectedSample || !currentParentUid || !sampleEditFormData.name) return
+//     setIsSavingSample(true)
+
+//     try {
+//       const submitData = {
+//         ...sampleEditFormData,
+        
+//         buyer_uids: selectedSampleBuyers,
+//         project_uids: selectedSampleProjects,
+//         note_uids: selectedSampleNotes,
+//         image_uids: selectedSample.images.map((img) => img.uid),
+//       }
+
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "PUT",
+//         body: JSON.stringify(submitData),
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample updated successfully" })
+//       setSampleEditModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
+//     } finally {
+//       setIsSavingSample(false)
+//     }
+//   }
+
+//   const handleDeleteSampleClick = (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleDeleteConfirmModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleConfirmDeleteSample = async () => {
+//     if (!selectedSample || !currentParentUid) return
+//     setIsDeletingSample(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       setSampleDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setIsDeletingSample(false)
+//     }
+//   }
+
+//   const handleSampleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+//     const { name, value } = e.target
+//     setSampleEditFormData((prev) => ({ ...prev, [name]: value }))
+//   }
+
+//   const handleSampleBuyerToggle = (buyerUid: string) => {
+//     setSelectedSampleBuyers((prev) =>
+//       prev.includes(buyerUid) ? prev.filter((uid) => uid !== buyerUid) : [...prev, buyerUid],
+//     )
+//   }
+
+//   const handleSampleProjectToggle = (projectUid: string) => {
+//     setSelectedSampleProjects((prev) =>
+//       prev.includes(projectUid) ? prev.filter((uid) => uid !== projectUid) : [...prev, projectUid],
+//     )
+//   }
+
+//   const handleSampleNoteToggle = (noteUid: string) => {
+//     setSelectedSampleNotes((prev) =>
+//       prev.includes(noteUid) ? prev.filter((uid) => uid !== noteUid) : [...prev, noteUid],
+//     )
+//   }
+
+//   const getBreadcrumbText = () => {
+//     if (parentStack.length === 0) return "Storage Spaces"
+//     return parentStack.map((item) => item.name).join(" > ")
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       {/* Header */}
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             <p className="text-sm sm:text-base text-muted-foreground mt-2">
+//               {parentStack.length > 0
+//                 ? "Manage spaces and samples in this location"
+//                 : "Manage your storage spaces and samples"}
+//             </p>
+//             {parentStack.length > 1 && (
+//               <p className="text-xs text-muted-foreground mt-1">
+//                 Path: {parentStack.map((item) => item.name).join(" > ")}
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {isLoading ? (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       ) : (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
+//                       {space.image ? (
+//                         <img
+//                           src={space.image || "/placeholder.svg"}
+//                           alt={space.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
+//                         <FolderOpen className="w-5 h-5 text-white" />
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {space.description || "No description"}
+//                       </p>
+
+//                       <div className="relative mb-4">
+//                         <button
+//                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button>
+//                         {menuOpen === space.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditClick(space)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteClick(space)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Samples Grid */}
+//           {samples.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
+//                     <div className="relative h-48 bg-muted overflow-hidden group cursor-pointer">
+//                       {sample.images && sample.images.length > 0 ? (
+//                         <img
+//                           src={sample.images[0].file || "/placeholder.svg"}
+//                           alt={sample.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 z-10">
+//                         <button
+//                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-white bg-black/50 rounded-full p-1 w-6 h-6" />
+//                         </button>
+//                         {sampleMenuOpen === sample.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-20">
+//                             <button
+//                               onClick={() => handleEditSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
+//                       <p className="text-xs text-muted-foreground">{sample.style_no && `Style: ${sample.style_no}`}</p>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {sample.description || "No description"}
+//                       </p>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditSampleClick(sample)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteSampleClick(sample)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+//               <p className="text-muted-foreground">No spaces or samples found</p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Edit Space Modal */}
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg"
+//                       />
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Space Confirmation Modal */}
+//       {deleteConfirmModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//               <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDelete}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleEditModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
+//               <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
+//                     <input
+//                       type="text"
+//                       name="name"
+//                       value={sampleEditFormData.name}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Style Number</label>
+//                     <input
+//                       type="text"
+//                       name="style_no"
+//                       value={sampleEditFormData.style_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">SKU Number</label>
+//                     <input
+//                       type="text"
+//                       name="sku_no"
+//                       value={sampleEditFormData.sku_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Item</label>
+//                     <input
+//                       type="text"
+//                       name="item"
+//                       value={sampleEditFormData.item}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Color</label>
+//                     <input
+//                       type="text"
+//                       name="color"
+//                       value={sampleEditFormData.color}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Size</label>
+//                     <input
+//                       type="text"
+//                       name="size"
+//                       value={sampleEditFormData.size}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
+//                     <input
+//                       type="text"
+//                       name="fabrication"
+//                       value={sampleEditFormData.fabrication}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
+//                     <input
+//                       type="text"
+//                       name="weight"
+//                       value={sampleEditFormData.weight}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     name="description"
+//                     value={sampleEditFormData.description}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
+//                   <textarea
+//                     name="comments"
+//                     value={sampleEditFormData.comments}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 {buyers.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Buyers</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {buyers.map((buyer) => (
+//                         <label key={buyer.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleBuyers.includes(buyer.uid)}
+//                             onChange={() => handleSampleBuyerToggle(buyer.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{buyer.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {projects.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Projects</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {projects.map((project) => (
+//                         <label key={project.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleProjects.includes(project.uid)}
+//                             onChange={() => handleSampleProjectToggle(project.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{project.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {notes.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Notes</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {notes.map((note) => (
+//                         <label key={note.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleNotes.includes(note.uid)}
+//                             onChange={() => handleSampleNoteToggle(note.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{note.title}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {selectedSample.images.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">
+//                       Images ({selectedSample.images.length})
+//                     </label>
+//                     <div className="grid grid-cols-3 gap-3">
+//                       {selectedSample.images.map((img) => (
+//                         <img
+//                           key={img.uid}
+//                           src={img.file || "/placeholder.svg"}
+//                           alt={img.file_name}
+//                           className="w-full h-20 object-cover rounded-lg border border-border"
+//                         />
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveSampleEdit}
+//                     disabled={isSavingSample}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSavingSample ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setSampleEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleDeleteConfirmModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Sample</CardTitle>
+//               <button
+//                 onClick={() => setSampleDeleteConfirmModal(false)}
+//                 className="p-1 hover:bg-muted rounded flex-shrink-0"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete sample "{selectedSample.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDeleteSample}
+//                   disabled={isDeletingSample}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeletingSample ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setSampleDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical } from "lucide-react"
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall } from "@/lib/auth-utils"
+// import Link from "next/link"
+// import { useRouter, useSearchParams } from "next/navigation"
+// import SampleDetailsModal from "./sample-details-modal"
+// import SampleForm from "./sample-form"
+
+// interface Space {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   status: string
+//   type: string
+//   company: number
+//   created_by: number
+//   parent: string | null
+// }
+
+// interface Sample {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   storage_uid: string
+// }
+
+// export default function SpacePage() {
+//   const { toast } = useToast()
+//   const router = useRouter()
+//   const searchParams = useSearchParams()
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Modals
+//   const [editModal, setEditModal] = useState(false)
+//   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [sampleDetailsModal, setSampleDetailsModal] = useState(false)
+//   const [selectedSample, setSelectedSample] = useState<any>(null)
+//   const [deleteConfirmSampleModal, setDeleteConfirmSampleModal] = useState(false)
+//   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
+//   const [editSampleModal, setEditSampleModal] = useState(false)
+
+//   // Edit form
+//   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState<string>("")
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+
+//   useEffect(() => {
+//     const focus = searchParams.get("focus")
+//     if (focus) {
+//       setCurrentParentUid(focus)
+//     }
+//     fetchSpacesAndSamples()
+//   }, [currentParentUid])
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       const spacesUrl = currentParentUid
+//         ? `/sample_manager/storage/?type=SPACE&parent_uid=${currentParentUid}`
+//         : `/sample_manager/storage/?type=SPACE`
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       if (currentParentUid) {
+//         const samplesResponse = await apiCall(`/sample_manager/sample/${currentParentUid}`)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch spaces and samples",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//     }
+//   }
+
+//   const handleEditClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "PUT",
+//         body: formData,
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setDeleteConfirmModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleConfirmDelete = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, { method: "DELETE" })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   const handleSampleDetailsClick = async (sample: Sample) => {
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSelectedSample(data)
+//         setSampleDetailsModal(true)
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     }
+//   }
+
+//   const handleEditSampleClick = async (sample: Sample) => {
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSelectedSample(data)
+//         setEditSampleModal(true)
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample", variant: "destructive" })
+//     }
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleDeleteSampleClick = (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setDeleteConfirmSampleModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleConfirmDeleteSample = async () => {
+//     if (!selectedSample || !currentParentUid) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       setDeleteConfirmSampleModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       {/* Header */}
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage spaces and samples</p>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {isLoading ? (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       ) : (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
+//                       {space.image ? (
+//                         <img
+//                           src={space.image || "/placeholder.svg"}
+//                           alt={space.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       {/* Folder Icon */}
+//                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
+//                         <FolderOpen className="w-5 h-5 text-white" />
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {space.description || "No description"}
+//                       </p>
+
+//                       {/* Three Dots Menu */}
+//                       <div className="relative mb-4">
+//                         <button
+//                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button>
+//                         {menuOpen === space.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       {/* Edit and Delete Buttons */}
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditClick(space)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteClick(space)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {samples.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
+//                     <div
+//                       className="relative h-48 bg-muted overflow-hidden cursor-pointer"
+//                       onClick={() => handleSampleDetailsClick(sample)}
+//                     >
+//                       {sample.image ? (
+//                         <img
+//                           src={sample.image || "/placeholder.svg"}
+//                           alt={sample.name}
+//                           className="w-full h-full object-cover hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {sample.description || "No description"}
+//                       </p>
+
+//                       {/* Three Dots Menu */}
+//                       <div className="relative mb-4">
+//                         <button
+//                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button>
+//                         {sampleMenuOpen === sample.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditSampleClick(sample)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteSampleClick(sample)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+//               <p className="text-muted-foreground">No spaces or samples found</p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Edit Modal */}
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 {/* Name */}
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 {/* Description */}
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 {/* Image */}
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg"
+//                       />
+//                       <button
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 {/* Submit Buttons */}
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Confirmation Modal */}
+//       {deleteConfirmModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//               <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDelete}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       <SampleDetailsModal
+//         isOpen={sampleDetailsModal}
+//         onClose={() => setSampleDetailsModal(false)}
+//         sample={selectedSample}
+//       />
+
+//       {editSampleModal && selectedSample && currentParentUid && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+//           <div className="py-6">
+//             <Card className="w-full max-w-4xl border-border max-h-[90vh] overflow-y-auto">
+//               <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//                 <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
+//                 <button onClick={() => setEditSampleModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                   <X className="w-5 h-5" />
+//                 </button>
+//               </CardHeader>
+//               <CardContent className="pt-6">
+//                 <SampleForm
+//                   storageUid={currentParentUid}
+//                   buyers={[]}
+//                   notes={[]}
+//                   projects={[]}
+//                   sampleData={selectedSample}
+//                   isEditMode={true}
+//                   onSuccess={() => {
+//                     setEditSampleModal(false)
+//                     fetchSpacesAndSamples()
+//                   }}
+//                 />
+//               </CardContent>
+//             </Card>
+//           </div>
+//         </div>
+//       )}
+
+//       {deleteConfirmSampleModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Sample</CardTitle>
+//               <button
+//                 onClick={() => setDeleteConfirmSampleModal(false)}
+//                 className="p-1 hover:bg-muted rounded flex-shrink-0"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete sample "{selectedSample.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDeleteSample}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmSampleModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { ChevronLeft, Plus, MoreVertical, Edit, Trash2, X, Loader2 } from "lucide-react"
+// import Link from "next/link"
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall } from "@/lib/auth-utils"
+// import SampleDetailsModal from "./sample-details-modal"
+// import SampleEditModal from "./sample-edit-modal"
+
+// interface Space {
+//   uid: string
+//   name: string
+//   description?: string
+//   image?: string
+// }
+
+// interface Sample {
+//   uid: string
+//   name: string
+//   storage_id: number
+//   style_no: string
+//   sku_no: string
+//   item: string
+//   color: string
+//   size: string
+//   types: string
+//   arrival_date?: string
+//   images?: Array<{ uid: string; file: string; file_name: string }>
+// }
+
+// interface EditFormData {
+//   name: string
+//   description: string
+// }
+
+// export default function SpaceComponent() {
+//   const { toast } = useToast()
+
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+//   const [isSaving, setIsSaving] = useState(false)
+
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Edit modal states
+//   const [editModal, setEditModal] = useState(false)
+//   const [editFormData, setEditFormData] = useState<EditFormData>({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState("")
+
+//   // Sample details modal states
+//   const [showSampleDetails, setShowSampleDetails] = useState(false)
+
+//   const [showSampleEditModal, setShowSampleEditModal] = useState(false)
+//   const [selectedSampleForEdit, setSelectedSampleForEdit] = useState<Sample | null>(null)
+
+//   useEffect(() => {
+//     fetchSpacesAndSamples()
+//   }, [currentParentUid])
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       let spacesUrl = "/sample_manager/storage/?type=SPACE"
+//       if (currentParentUid) {
+//         spacesUrl = `${spacesUrl}&parent_uid=${currentParentUid}`
+//       }
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       const samplesUrl = currentParentUid ? `/sample_manager/sample/${currentParentUid}` : ""
+//       if (samplesUrl) {
+//         const samplesResponse = await apiCall(samplesUrl)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       } else {
+//         setSamples([])
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch data",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//     }
+//   }
+
+//   const handleEditSpace = (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       apiCall(`/sample_manager/storage/${space.uid}`).then((response) => {
+//         if (response.ok) {
+//           response.json().then((data) => {
+//             setEditFormData({ name: data.name, description: data.description })
+//             if (data.image) {
+//               setEditImagePreview(data.image)
+//             }
+//           })
+//         }
+//       })
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "PUT",
+//         body: formData,
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setShowDeleteConfirm(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleDeleteConfirm = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setShowDeleteConfirm(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleEditSample = (sample: Sample) => {
+//     setSelectedSampleForEdit(sample)
+//     setShowSampleEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleDeleteSample = async (sample: Sample) => {
+//     if (!currentParentUid) return
+
+//     setIsDeleting(true)
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             {parentStack.length > 1 && (
+//               <p className="text-sm sm:text-base text-muted-foreground mt-1">
+//                 From:{" "}
+//                 {parentStack
+//                   .slice(0, -1)
+//                   .map((s) => s.name)
+//                   .join(" > ")}
+//               </p>
+//             )}
+//             {parentStack.length === 0 && (
+//               <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage spaces and samples</p>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8 flex-wrap">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {/* Loading State */}
+//       {isLoading && (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       )}
+
+//       {!isLoading && (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <>
+//               <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-md transition cursor-pointer group"
+//                     onClick={() => handleSpaceCardClick(space)}
+//                   >
+//                     <CardContent className="p-4 sm:p-6">
+//                       <div className="flex items-start justify-between mb-3">
+//                         <h3 className="text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition flex-1">
+//                           {space.name}
+//                         </h3>
+//                         <div className="relative" onClick={(e) => e.stopPropagation()}>
+//                           <button
+//                             onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                             className="p-1 hover:bg-muted rounded-lg transition"
+//                           >
+//                             <MoreVertical className="w-4 h-4" />
+//                           </button>
+//                           {menuOpen === space.uid && (
+//                             <div className="absolute top-8 right-0 bg-card border border-border rounded-lg shadow-lg z-10 w-32">
+//                               <button
+//                                 onClick={() => handleEditSpace(space)}
+//                                 className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                               >
+//                                 <Edit className="w-4 h-4" />
+//                                 Edit
+//                               </button>
+//                               <button
+//                                 onClick={() => handleDeleteClick(space)}
+//                                 className="w-full text-left px-4 py-2 text-sm hover:bg-muted text-red-600 flex items-center gap-2"
+//                               >
+//                                 <Trash2 className="w-4 h-4" />
+//                                 Delete
+//                               </button>
+//                             </div>
+//                           )}
+//                         </div>
+//                       </div>
+//                       {space.description && (
+//                         <p className="text-sm text-muted-foreground line-clamp-2">{space.description}</p>
+//                       )}
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </>
+//           )}
+
+//           {/* Samples Grid */}
+//           {samples.length > 0 && (
+//             <>
+//               <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border overflow-hidden hover:shadow-md transition">
+//                     {sample.images && sample.images.length > 0 && (
+//                       <div className="relative h-40 sm:h-48 overflow-hidden">
+//                         <img
+//                           src={sample.images[0].file || "/placeholder.svg"}
+//                           alt={sample.images[0].file_name}
+//                           className="w-full h-full object-cover"
+//                         />
+//                       </div>
+//                     )}
+//                     <CardContent className="p-4 sm:p-6">
+//                       <div className="flex items-start justify-between mb-2">
+//                         <div>
+//                           <h3 className="text-base sm:text-lg font-semibold text-foreground">{sample.name}</h3>
+//                           <p className="text-xs sm:text-sm text-muted-foreground">Style: {sample.style_no}</p>
+//                         </div>
+//                         <div className="relative">
+//                           <button
+//                             onClick={() => setMenuOpen(menuOpen === sample.uid ? null : sample.uid)}
+//                             className="p-1 hover:bg-muted rounded-lg transition flex-shrink-0"
+//                           >
+//                             <MoreVertical className="w-4 h-4" />
+//                           </button>
+//                           {menuOpen === sample.uid && (
+//                             <div className="absolute top-8 right-0 bg-card border border-border rounded-lg shadow-lg z-10 w-32">
+//                               <button
+//                                 onClick={() => {
+//                                   setSelectedSample(sample)
+//                                   setShowSampleDetails(true)
+//                                   setMenuOpen(null)
+//                                 }}
+//                                 className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                               >
+//                                 View Details
+//                               </button>
+//                               <button
+//                                 onClick={() => handleEditSample(sample)}
+//                                 className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                               >
+//                                 <Edit className="w-4 h-4" />
+//                                 Edit
+//                               </button>
+//                               <button
+//                                 onClick={() => handleDeleteSample(sample)}
+//                                 className="w-full text-left px-4 py-2 text-sm hover:bg-muted text-red-600 flex items-center gap-2"
+//                               >
+//                                 <Trash2 className="w-4 h-4" />
+//                                 Delete
+//                               </button>
+//                             </div>
+//                           )}
+//                         </div>
+//                       </div>
+//                       <div className="space-y-1 text-xs">
+//                         <p className="text-muted-foreground">SKU: {sample.sku_no}</p>
+//                         <p className="text-muted-foreground">Item: {sample.item}</p>
+//                         <p className="text-muted-foreground">Color: {sample.color}</p>
+//                         <p className="text-muted-foreground">Size: {sample.size}</p>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </>
+//           )}
+
+//           {/* Empty State */}
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <p className="text-muted-foreground mb-4">
+//                 {currentParentUid
+//                   ? "No spaces or samples found in this location."
+//                   : "No storage spaces found. Create one to get started."}
+//               </p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Sample Details Modal */}
+//       {selectedSample && (
+//         <SampleDetailsModal
+//           isOpen={showSampleDetails}
+//           onClose={() => setShowSampleDetails(false)}
+//           sample={selectedSample}
+//         />
+//       )}
+
+//       {selectedSampleForEdit && currentParentUid && (
+//         <SampleEditModal
+//           isOpen={showSampleEditModal}
+//           onClose={() => {
+//             setShowSampleEditModal(false)
+//             setSelectedSampleForEdit(null)
+//           }}
+//           sample={selectedSampleForEdit}
+//           storageUid={currentParentUid}
+//           onSuccess={fetchSpacesAndSamples}
+//         />
+//       )}
+
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 {/* Name */}
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 {/* Description */}
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg border border-border"
+//                       />
+//                       <button
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 {/* Submit Buttons */}
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Confirmation Modal */}
+//       {showDeleteConfirm && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-sm border-border">
+//             <CardHeader className="pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//             </CardHeader>
+//             <CardContent className="pt-0">
+//               <p className="text-sm text-muted-foreground mb-6">
+//                 Are you sure you want to delete "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex gap-3">
+//                 <Button
+//                   onClick={handleDeleteConfirm}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowDeleteConfirm(false)}>
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical } from "lucide-react"
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall } from "@/lib/auth-utils"
+// import Link from "next/link"
+// import { useRouter } from "next/navigation"
+
+// interface Space {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   status: string
+//   type: string
+//   company: number
+//   created_by: number
+//   parent: string | null
+// }
+
+// interface SampleImage {
+//   id: number
+//   uid: string
+//   file: string
+//   file_name: string
+// }
+
+// interface SampleBuyer {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleProject {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleNote {
+//   id: number
+//   uid: string
+//   title: string
+// }
+
+// interface Sample {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   style_no: string
+//   sku_no: string
+//   item: string
+//   fabrication: string
+//   weight: string
+//   color: string
+//   size: string
+//   comments: string
+//   arrival_date: string
+//   images: SampleImage[]
+//   buyers: SampleBuyer[]
+//   projects: SampleProject[]
+//   notes: SampleNote[]
+// }
+
+// export default function SpacePage() {
+//   const { toast } = useToast()
+//   const router = useRouter()
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Modals
+//   const [editModal, setEditModal] = useState(false)
+//   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
+//   const [sampleEditModal, setSampleEditModal] = useState(false)
+//   const [sampleDeleteConfirmModal, setSampleDeleteConfirmModal] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+
+//   // Edit form
+//   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState<string>("")
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+
+//   // Sample edit form
+//   const [sampleEditFormData, setSampleEditFormData] = useState({
+//     name: "",
+//     description: "",
+//     style_no: "",
+//     sku_no: "",
+//     item: "",
+//     fabrication: "",
+//     weight: "",
+//     color: "",
+//     size: "",
+//     comments: "",
+//     arrival_date: "",
+//   })
+//   const [selectedSampleBuyers, setSelectedSampleBuyers] = useState<string[]>([])
+//   const [selectedSampleProjects, setSelectedSampleProjects] = useState<string[]>([])
+//   const [selectedSampleNotes, setSelectedSampleNotes] = useState<string[]>([])
+//   const [buyers, setBuyers] = useState<SampleBuyer[]>([])
+//   const [projects, setProjects] = useState<SampleProject[]>([])
+//   const [notes, setNotes] = useState<SampleNote[]>([])
+//   const [isSavingSample, setIsSavingSample] = useState(false)
+//   const [isDeletingSample, setIsDeletingSample] = useState(false)
+
+//   useEffect(() => {
+//     fetchSpacesAndSamples()
+//   }, [currentParentUid])
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       // Fetch spaces
+//       const spacesUrl = currentParentUid
+//         ? `/sample_manager/storage/?type=SPACE&parent_uid=${currentParentUid}`
+//         : `/sample_manager/storage/?type=SPACE`
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       // Fetch samples if there's a current parent
+//       if (currentParentUid) {
+//         const samplesResponse = await apiCall(`/sample_manager/sample/${currentParentUid}`)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch spaces and samples",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//     }
+//   }
+
+//   const handleEditClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "PUT",
+//         body: formData,
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setDeleteConfirmModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleConfirmDelete = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, { method: "DELETE" })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   const handleEditSampleClick = async (sample: Sample) => {
+//     setSelectedSample(sample)
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSampleEditFormData({
+//           name: data.name,
+//           description: data.description,
+//           style_no: data.style_no,
+//           sku_no: data.sku_no,
+//           item: data.item,
+//           fabrication: data.fabrication,
+//           weight: data.weight,
+//           color: data.color,
+//           size: data.size,
+//           comments: data.comments,
+//           arrival_date: data.arrival_date,
+//         })
+//         setSelectedSampleBuyers(data.buyers?.map((b: SampleBuyer) => b.uid) || [])
+//         setSelectedSampleProjects(data.projects?.map((p: SampleProject) => p.uid) || [])
+//         setSelectedSampleNotes(data.notes?.map((n: SampleNote) => n.uid) || [])
+
+//         // Fetch buyers, projects, and notes for the modal
+//         const buyersResp = await apiCall("/sample_manager/buyer/")
+//         if (buyersResp.ok) {
+//           const buyersData = await buyersResp.json()
+//           setBuyers(Array.isArray(buyersData) ? buyersData : buyersData.results || [])
+//         }
+
+//         const projectsResp = await apiCall("/sample_manager/project/")
+//         if (projectsResp.ok) {
+//           const projectsData = await projectsResp.json()
+//           setProjects(Array.isArray(projectsData) ? projectsData : projectsData.results || [])
+//         }
+
+//         const notesResp = await apiCall("/sample_manager/note/")
+//         if (notesResp.ok) {
+//           const notesData = await notesResp.json()
+//           setNotes(Array.isArray(notesData) ? notesData : notesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     }
+//     setSampleEditModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleSaveSampleEdit = async () => {
+//     if (!selectedSample || !currentParentUid || !sampleEditFormData.name) return
+//     setIsSavingSample(true)
+
+//     try {
+//       const submitData = {
+//         ...sampleEditFormData,
+//         buyer_uids: selectedSampleBuyers,
+//         project_uids: selectedSampleProjects,
+//         note_uids: selectedSampleNotes,
+//         image_uids: selectedSample.images.map((img) => img.uid),
+//       }
+
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "PUT",
+//         body: JSON.stringify(submitData),
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample updated successfully" })
+//       setSampleEditModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
+//     } finally {
+//       setIsSavingSample(false)
+//     }
+//   }
+
+//   const handleDeleteSampleClick = (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleDeleteConfirmModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleConfirmDeleteSample = async () => {
+//     if (!selectedSample || !currentParentUid) return
+//     setIsDeletingSample(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       setSampleDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setIsDeletingSample(false)
+//     }
+//   }
+
+//   const handleSampleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+//     const { name, value } = e.target
+//     setSampleEditFormData((prev) => ({ ...prev, [name]: value }))
+//   }
+
+//   const handleSampleBuyerToggle = (buyerUid: string) => {
+//     setSelectedSampleBuyers((prev) =>
+//       prev.includes(buyerUid) ? prev.filter((uid) => uid !== buyerUid) : [...prev, buyerUid],
+//     )
+//   }
+
+//   const handleSampleProjectToggle = (projectUid: string) => {
+//     setSelectedSampleProjects((prev) =>
+//       prev.includes(projectUid) ? prev.filter((uid) => uid !== projectUid) : [...prev, projectUid],
+//     )
+//   }
+
+//   const handleSampleNoteToggle = (noteUid: string) => {
+//     setSelectedSampleNotes((prev) =>
+//       prev.includes(noteUid) ? prev.filter((uid) => uid !== noteUid) : [...prev, noteUid],
+//     )
+//   }
+
+//   const getBreadcrumbText = () => {
+//     if (parentStack.length === 0) return "Storage Spaces"
+//     return parentStack.map((item) => item.name).join(" > ")
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       {/* Header */}
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             <p className="text-sm sm:text-base text-muted-foreground mt-2">
+//               {parentStack.length > 0
+//                 ? "Manage spaces and samples in this location"
+//                 : "Manage your storage spaces and samples"}
+//             </p>
+//             {parentStack.length > 1 && (
+//               <p className="text-xs text-muted-foreground mt-1">
+//                 Path: {parentStack.map((item) => item.name).join(" > ")}
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {isLoading ? (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       ) : (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
+//                       {space.image ? (
+//                         <img
+//                           src={space.image || "/placeholder.svg"}
+//                           alt={space.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
+//                         <FolderOpen className="w-5 h-5 text-white" />
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {space.description || "No description"}
+//                       </p>
+
+//                       <div className="relative mb-4">
+//                         <button
+//                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button>
+//                         {menuOpen === space.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditClick(space)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteClick(space)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Samples Grid */}
+//           {samples.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
+//                     <div className="relative h-48 bg-muted overflow-hidden group cursor-pointer">
+//                       {sample.images && sample.images.length > 0 ? (
+//                         <img
+//                           src={sample.images[0].file || "/placeholder.svg"}
+//                           alt={sample.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 z-10">
+//                         <button
+//                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-white bg-black/50 rounded-full p-1 w-6 h-6" />
+//                         </button>
+//                         {sampleMenuOpen === sample.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-20">
+//                             <button
+//                               onClick={() => handleEditSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
+//                       <p className="text-xs text-muted-foreground">{sample.style_no && `Style: ${sample.style_no}`}</p>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {sample.description || "No description"}
+//                       </p>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditSampleClick(sample)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteSampleClick(sample)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+//               <p className="text-muted-foreground">No spaces or samples found</p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Edit Space Modal */}
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg"
+//                       />
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Space Confirmation Modal */}
+//       {deleteConfirmModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//               <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDelete}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleEditModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
+//               <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
+//                     <input
+//                       type="text"
+//                       name="name"
+//                       value={sampleEditFormData.name}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Style Number</label>
+//                     <input
+//                       type="text"
+//                       name="style_no"
+//                       value={sampleEditFormData.style_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">SKU Number</label>
+//                     <input
+//                       type="text"
+//                       name="sku_no"
+//                       value={sampleEditFormData.sku_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Item</label>
+//                     <input
+//                       type="text"
+//                       name="item"
+//                       value={sampleEditFormData.item}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Color</label>
+//                     <input
+//                       type="text"
+//                       name="color"
+//                       value={sampleEditFormData.color}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Size</label>
+//                     <input
+//                       type="text"
+//                       name="size"
+//                       value={sampleEditFormData.size}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
+//                     <input
+//                       type="text"
+//                       name="fabrication"
+//                       value={sampleEditFormData.fabrication}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
+//                     <input
+//                       type="text"
+//                       name="weight"
+//                       value={sampleEditFormData.weight}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     name="description"
+//                     value={sampleEditFormData.description}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
+//                   <textarea
+//                     name="comments"
+//                     value={sampleEditFormData.comments}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 {buyers.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Buyers</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {buyers.map((buyer) => (
+//                         <label key={buyer.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleBuyers.includes(buyer.uid)}
+//                             onChange={() => handleSampleBuyerToggle(buyer.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{buyer.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {projects.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Projects</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {projects.map((project) => (
+//                         <label key={project.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleProjects.includes(project.uid)}
+//                             onChange={() => handleSampleProjectToggle(project.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{project.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {notes.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Notes</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {notes.map((note) => (
+//                         <label key={note.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleNotes.includes(note.uid)}
+//                             onChange={() => handleSampleNoteToggle(note.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{note.title}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {selectedSample.images.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">
+//                       Images ({selectedSample.images.length})
+//                     </label>
+//                     <div className="grid grid-cols-3 gap-3">
+//                       {selectedSample.images.map((img) => (
+//                         <img
+//                           key={img.uid}
+//                           src={img.file || "/placeholder.svg"}
+//                           alt={img.file_name}
+//                           className="w-full h-20 object-cover rounded-lg border border-border"
+//                         />
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveSampleEdit}
+//                     disabled={isSavingSample}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSavingSample ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setSampleEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleDeleteConfirmModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Sample</CardTitle>
+//               <button
+//                 onClick={() => setSampleDeleteConfirmModal(false)}
+//                 className="p-1 hover:bg-muted rounded flex-shrink-0"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete sample "{selectedSample.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDeleteSample}
+//                   disabled={isDeletingSample}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeletingSample ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setSampleDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical } from "lucide-react"
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall, getCookie } from "@/lib/auth-utils"
+// import Link from "next/link"
+// import { useRouter } from "next/navigation"
+
+// interface Space {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   status: string
+//   type: string
+//   company: number
+//   created_by: number
+//   parent: string | null
+// }
+
+// interface SampleImage {
+//   id: number
+//   uid: string
+//   file: string
+//   file_name: string
+// }
+
+// interface SampleBuyer {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleProject {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface SampleNote {
+//   id: number
+//   uid: string
+//   title: string
+// }
+
+// interface Sample {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   style_no: string
+//   sku_no: string
+//   item: string
+//   fabrication: string
+//   weight: string
+//   color: string
+//   size: string
+//   comments: string
+//   arrival_date: string
+//   images: SampleImage[]
+//   buyers: SampleBuyer[]
+//   projects: SampleProject[]
+//   notes: SampleNote[]
+// }
+
+// export default function SpacePage() {
+//   const { toast } = useToast()
+//   const router = useRouter()
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Modals
+//   const [editModal, setEditModal] = useState(false)
+//   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
+//   const [sampleEditModal, setSampleEditModal] = useState(false)
+//   const [sampleDeleteConfirmModal, setSampleDeleteConfirmModal] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+
+//   // Edit form
+//   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState<string>("")
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+
+//   // Sample edit form
+//   const [sampleEditFormData, setSampleEditFormData] = useState({
+//     name: "",
+//     description: "",
+//     style_no: "",
+//     sku_no: "",
+//     item: "",
+//     fabrication: "",
+//     weight: "",
+//     color: "",
+//     size: "",
+//     comments: "",
+//     arrival_date: "",
+//   })
+//   const [sampleUploadedImages, setSampleUploadedImages] = useState<Array<{ uid: string; preview: string }>>([])
+//   const [sampleIsUploading, setSampleIsUploading] = useState(false)
+//   const [selectedSampleBuyers, setSelectedSampleBuyers] = useState<string[]>([])
+//   const [selectedSampleProjects, setSelectedSampleProjects] = useState<string[]>([])
+//   const [selectedSampleNotes, setSelectedSampleNotes] = useState<string[]>([])
+//   const [buyers, setBuyers] = useState<SampleBuyer[]>([])
+//   const [projects, setProjects] = useState<SampleProject[]>([])
+//   const [notes, setNotes] = useState<SampleNote[]>([])
+//   const [isSavingSample, setIsSavingSample] = useState(false)
+//   const [isDeletingSample, setIsDeletingSample] = useState(false)
+
+//   useEffect(() => {
+//     fetchSpacesAndSamples()
+//   }, [currentParentUid])
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       // Fetch spaces
+//       const spacesUrl = currentParentUid
+//         ? `/sample_manager/storage/?type=SPACE&parent_uid=${currentParentUid}`
+//         : `/sample_manager/storage/?type=SPACE`
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       // Fetch samples if there's a current parent
+//       if (currentParentUid) {
+//         const samplesResponse = await apiCall(`/sample_manager/sample/${currentParentUid}`)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch spaces and samples",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//     }
+//   }
+
+//   const handleEditClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//         method: "PUT",
+//         body: formData,
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setDeleteConfirmModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleConfirmDelete = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, { method: "DELETE" })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   const compressSampleImage = async (file: File): Promise<Blob> => {
+//     return new Promise((resolve) => {
+//       const reader = new FileReader()
+//       reader.readAsDataURL(file)
+//       reader.onload = (e) => {
+//         const img = new Image()
+//         img.src = e.target?.result as string
+//         img.onload = () => {
+//           const canvas = document.createElement("canvas")
+//           let width = img.width
+//           let height = img.height
+//           let quality = 0.9
+
+//           while (
+//             (canvas.toBlob((blob) => {}, "image/jpeg", quality),
+//             canvas.toDataURL("image/jpeg", quality).length / 1024 > 999) &&
+//             quality > 0.1
+//           ) {
+//             quality -= 0.1
+//           }
+
+//           if (img.width > 1920 || img.height > 1920) {
+//             const maxDim = 1920
+//             if (width > height) {
+//               height = Math.round((height * maxDim) / width)
+//               width = maxDim
+//             } else {
+//               width = Math.round((width * maxDim) / height)
+//               height = maxDim
+//             }
+//           }
+
+//           canvas.width = width
+//           canvas.height = height
+//           const ctx = canvas.getContext("2d")
+//           ctx?.drawImage(img, 0, 0, width, height)
+
+//           canvas.toBlob(
+//             (blob) => {
+//               if (blob) resolve(blob)
+//             },
+//             "image/jpeg",
+//             quality,
+//           )
+//         }
+//       }
+//     })
+//   }
+
+//   const handleSampleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const files = e.currentTarget.files
+//     if (!files || !currentParentUid) return
+
+//     setSampleIsUploading(true)
+//     try {
+//       for (let i = 0; i < files.length; i++) {
+//         const file = files[i]
+//         const compressedBlob = await compressSampleImage(file)
+
+//         const formDataForUpload = new FormData()
+//         formDataForUpload.append("file", new File([compressedBlob], file.name, { type: "image/jpeg" }))
+
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/images/`, {
+//           method: "POST",
+//           headers: {
+//             Authorization: `Bearer ${getCookie("access_token")}`,
+//           },
+//           body: formDataForUpload,
+//         })
+
+//         if (!response.ok) {
+//           throw new Error("Failed to upload image")
+//         }
+
+//         const data = await response.json()
+//         const imagePreview = URL.createObjectURL(compressedBlob)
+
+//         setSampleUploadedImages((prev) => [...prev, { uid: data.uid, preview: imagePreview }])
+//       }
+
+//       toast({
+//         title: "Success",
+//         description: `${files.length} image(s) uploaded successfully.`,
+//       })
+//     } catch (err) {
+//       toast({
+//         title: "Error",
+//         description: "Failed to upload images. Please try again.",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setSampleIsUploading(false)
+//     }
+//   }
+
+//   const handleRemoveSampleImage = (uid: string) => {
+//     setSampleUploadedImages((prev) => prev.filter((img) => img.uid !== uid))
+//   }
+
+//   const handleEditSpaceClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleEditSampleClick = async (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleUploadedImages([])
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSampleEditFormData({
+//           name: data.name,
+//           description: data.description,
+//           style_no: data.style_no,
+//           sku_no: data.sku_no,
+//           item: data.item,
+//           fabrication: data.fabrication,
+//           weight: data.weight,
+//           color: data.color,
+//           size: data.size,
+//           comments: data.comments,
+//           arrival_date: data.arrival_date,
+//         })
+//         setSelectedSampleBuyers(data.buyers?.map((b: SampleBuyer) => b.uid) || [])
+//         setSelectedSampleProjects(data.projects?.map((p: SampleProject) => p.uid) || [])
+//         setSelectedSampleNotes(data.notes?.map((n: SampleNote) => n.uid) || [])
+
+//         // Fetch buyers, projects, and notes for the modal
+//         const buyersResp = await apiCall("/sample_manager/buyer/")
+//         if (buyersResp.ok) {
+//           const buyersData = await buyersResp.json()
+//           setBuyers(Array.isArray(buyersData) ? buyersData : buyersData.results || [])
+//         }
+
+//         const projectsResp = await apiCall("/sample_manager/project/")
+//         if (projectsResp.ok) {
+//           const projectsData = await projectsResp.json()
+//           setProjects(Array.isArray(projectsData) ? projectsData : projectsData.results || [])
+//         }
+
+//         const notesResp = await apiCall("/sample_manager/note/")
+//         if (notesResp.ok) {
+//           const notesData = await notesResp.json()
+//           setNotes(Array.isArray(notesData) ? notesData : notesData.results || [])
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     }
+//     setSampleEditModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleSaveSampleEdit = async () => {
+//     if (!selectedSample || !currentParentUid || !sampleEditFormData.name) return
+//     setIsSavingSample(true)
+
+//     try {
+//       const existingImageUids = selectedSample.images.map((img) => img.uid)
+//       const allImageUids = [...existingImageUids, ...sampleUploadedImages.map((img) => img.uid)]
+
+//       const submitData = {
+//         ...sampleEditFormData,
+//         storage_uid: currentParentUid,
+//         buyer_uids: selectedSampleBuyers,
+//         project_uids: selectedSampleProjects,
+//         note_uids: selectedSampleNotes,
+//         image_uids: allImageUids,
+//       }
+
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "PUT",
+//         body: JSON.stringify(submitData),
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample updated successfully" })
+//       setSampleEditModal(false)
+//       setSampleUploadedImages([])
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
+//     } finally {
+//       setIsSavingSample(false)
+//     }
+//   }
+
+//   const handleDeleteSampleClick = (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleDeleteConfirmModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleConfirmDeleteSample = async () => {
+//     if (!selectedSample || !currentParentUid) return
+//     setIsDeletingSample(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       setSampleDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setIsDeletingSample(false)
+//     }
+//   }
+
+//   const handleSampleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+//     const { name, value } = e.target
+//     setSampleEditFormData((prev) => ({ ...prev, [name]: value }))
+//   }
+
+//   const handleSampleBuyerToggle = (buyerUid: string) => {
+//     setSelectedSampleBuyers((prev) =>
+//       prev.includes(buyerUid) ? prev.filter((uid) => uid !== buyerUid) : [...prev, buyerUid],
+//     )
+//   }
+
+//   const handleSampleProjectToggle = (projectUid: string) => {
+//     setSelectedSampleProjects((prev) =>
+//       prev.includes(projectUid) ? prev.filter((uid) => uid !== projectUid) : [...prev, projectUid],
+//     )
+//   }
+
+//   const handleSampleNoteToggle = (noteUid: string) => {
+//     setSelectedSampleNotes((prev) =>
+//       prev.includes(noteUid) ? prev.filter((uid) => uid !== noteUid) : [...prev, noteUid],
+//     )
+//   }
+
+//   const getBreadcrumbText = () => {
+//     if (parentStack.length === 0) return "Storage Spaces"
+//     return parentStack.map((item) => item.name).join(" > ")
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       {/* Header */}
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             <p className="text-sm sm:text-base text-muted-foreground mt-2">
+//               {parentStack.length > 0
+//                 ? "Manage spaces and samples in this location"
+//                 : "Manage your storage spaces and samples"}
+//             </p>
+//             {parentStack.length > 1 && (
+//               <p className="text-xs text-muted-foreground mt-1">
+//                 Path: {parentStack.map((item) => item.name).join(" > ")}
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {isLoading ? (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       ) : (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
+//                       {space.image ? (
+//                         <img
+//                           src={space.image || "/placeholder.svg"}
+//                           alt={space.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
+//                         <FolderOpen className="w-5 h-5 text-white" />
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {space.description || "No description"}
+//                       </p>
+
+//                       <div className="relative mb-4">
+//                         <button
+//                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button>
+//                         {menuOpen === space.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditClick(space)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteClick(space)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Samples Grid */}
+//           {samples.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
+//                     <div className="relative h-48 bg-muted overflow-hidden group cursor-pointer">
+//                       {sample.images && sample.images.length > 0 ? (
+//                         <img
+//                           src={sample.images[0].file || "/placeholder.svg"}
+//                           alt={sample.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 z-10">
+//                         <button
+//                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-white bg-black/50 rounded-full p-1 w-6 h-6" />
+//                         </button>
+//                         {sampleMenuOpen === sample.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-20">
+//                             <button
+//                               onClick={() => handleEditSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteSampleClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
+//                       <p className="text-xs text-muted-foreground">{sample.style_no && `Style: ${sample.style_no}`}</p>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {sample.description || "No description"}
+//                       </p>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditSampleClick(sample)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteSampleClick(sample)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+//               <p className="text-muted-foreground">No spaces or samples found</p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Edit Space Modal */}
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg"
+//                       />
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Space Confirmation Modal */}
+//       {deleteConfirmModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//               <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDelete}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleEditModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
+//               <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
+//                     <input
+//                       type="text"
+//                       name="name"
+//                       value={sampleEditFormData.name}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Style Number</label>
+//                     <input
+//                       type="text"
+//                       name="style_no"
+//                       value={sampleEditFormData.style_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">SKU Number</label>
+//                     <input
+//                       type="text"
+//                       name="sku_no"
+//                       value={sampleEditFormData.sku_no}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Item</label>
+//                     <input
+//                       type="text"
+//                       name="item"
+//                       value={sampleEditFormData.item}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Color</label>
+//                     <input
+//                       type="text"
+//                       name="color"
+//                       value={sampleEditFormData.color}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Size</label>
+//                     <input
+//                       type="text"
+//                       name="size"
+//                       value={sampleEditFormData.size}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
+//                     <input
+//                       type="text"
+//                       name="fabrication"
+//                       value={sampleEditFormData.fabrication}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
+//                     <input
+//                       type="text"
+//                       name="weight"
+//                       value={sampleEditFormData.weight}
+//                       onChange={handleSampleFormChange}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     name="description"
+//                     value={sampleEditFormData.description}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
+//                   <textarea
+//                     name="comments"
+//                     value={sampleEditFormData.comments}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={2}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Arrival Date</label>
+//                   <input
+//                     type="date"
+//                     name="arrival_date"
+//                     value={sampleEditFormData.arrival_date}
+//                     onChange={handleSampleFormChange}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 {buyers.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Buyers</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {buyers.map((buyer) => (
+//                         <label key={buyer.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleBuyers.includes(buyer.uid)}
+//                             onChange={() => handleSampleBuyerToggle(buyer.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{buyer.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {projects.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Projects</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {projects.map((project) => (
+//                         <label key={project.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleProjects.includes(project.uid)}
+//                             onChange={() => handleSampleProjectToggle(project.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{project.name}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {notes.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Notes</label>
+//                     <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
+//                       {notes.map((note) => (
+//                         <label key={note.uid} className="flex items-center gap-2 cursor-pointer">
+//                           <input
+//                             type="checkbox"
+//                             checked={selectedSampleNotes.includes(note.uid)}
+//                             onChange={() => handleSampleNoteToggle(note.uid)}
+//                             className="w-4 h-4 rounded border-border"
+//                           />
+//                           <span className="text-sm text-foreground">{note.title}</span>
+//                         </label>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {selectedSample.images.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">
+//                       Existing Images ({selectedSample.images.length})
+//                     </label>
+//                     <div className="grid grid-cols-3 gap-3">
+//                       {selectedSample.images.map((img) => (
+//                         <img
+//                           key={img.uid}
+//                           src={img.file || "/placeholder.svg"}
+//                           alt={img.file_name}
+//                           className="w-full h-20 object-cover rounded-lg border border-border"
+//                         />
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Add New Images</label>
+//                   <input
+//                     type="file"
+//                     multiple
+//                     accept="image/*"
+//                     onChange={handleSampleFileSelect}
+//                     disabled={sampleIsUploading}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+//                   />
+//                   {sampleIsUploading && (
+//                     <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+//                       <Loader2 className="w-4 h-4 animate-spin" />
+//                       Uploading images...
+//                     </p>
+//                   )}
+//                 </div>
+
+//                 {sampleUploadedImages.length > 0 && (
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">
+//                       New Images ({sampleUploadedImages.length})
+//                     </label>
+//                     <div className="grid grid-cols-3 gap-3">
+//                       {sampleUploadedImages.map((img) => (
+//                         <div key={img.uid} className="relative">
+//                           <img
+//                             src={img.preview || "/placeholder.svg"}
+//                             alt="New upload"
+//                             className="w-full h-20 object-cover rounded-lg border border-border"
+//                           />
+//                           <button
+//                             type="button"
+//                             onClick={() => handleRemoveSampleImage(img.uid)}
+//                             className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+//                           >
+//                             <X className="w-3 h-3" />
+//                           </button>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveSampleEdit}
+//                     disabled={isSavingSample}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSavingSample ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setSampleEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleDeleteConfirmModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Sample</CardTitle>
+//               <button
+//                 onClick={() => setSampleDeleteConfirmModal(false)}
+//                 className="p-1 hover:bg-muted rounded flex-shrink-0"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete sample "{selectedSample.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDeleteSample}
+//                   disabled={isDeletingSample}
+//                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+//                 >
+//                   {isDeletingSample ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setSampleDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+
 "use client"
 
 import type React from "react"
@@ -3231,7 +7815,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { apiCall } from "@/lib/auth-utils"
+import { getCookie,apiCall } from "@/lib/auth-utils"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -3248,49 +7832,13 @@ interface Space {
   parent: string | null
 }
 
-interface SampleImage {
-  id: number
-  uid: string
-  file: string
-  file_name: string
-}
-
-interface SampleBuyer {
-  id: number
-  uid: string
-  name: string
-}
-
-interface SampleProject {
-  id: number
-  uid: string
-  name: string
-}
-
-interface SampleNote {
-  id: number
-  uid: string
-  title: string
-}
-
 interface Sample {
   id: number
   uid: string
   name: string
   description: string
-  style_no: string
-  sku_no: string
-  item: string
-  fabrication: string
-  weight: string
-  color: string
-  size: string
-  comments: string
-  arrival_date: string
-  images: SampleImage[]
-  buyers: SampleBuyer[]
-  projects: SampleProject[]
-  notes: SampleNote[]
+  image: string | null
+  storage_uid: string
 }
 
 export default function SpacePage() {
@@ -3311,6 +7859,27 @@ export default function SpacePage() {
   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+
+  const [sampleFormData, setSampleFormData] = useState({
+    arrival_date: "",
+    style_no: "",
+    sku_no: "",
+    item: "",
+    fabrication: "",
+    weight: "",
+    weight_type: "GM",
+    size_type: "CENTIMETER",
+    types: "DEVELOPMENT",
+    color: "",
+    size: "",
+    comments: "",
+    name: "",
+    description: "",
+    buyer_uids: [] as string[],
+    project_uids: [] as string[],
+    note_uids: [] as string[],
+  })
 
   // Edit form
   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
@@ -3318,27 +7887,6 @@ export default function SpacePage() {
   const [editImagePreview, setEditImagePreview] = useState<string>("")
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  // Sample edit form
-  const [sampleEditFormData, setSampleEditFormData] = useState({
-    name: "",
-    description: "",
-    style_no: "",
-    sku_no: "",
-    item: "",
-    fabrication: "",
-    weight: "",
-    color: "",
-    size: "",
-    comments: "",
-    arrival_date: "",
-  })
-  const [selectedSampleBuyers, setSelectedSampleBuyers] = useState<string[]>([])
-  const [selectedSampleProjects, setSelectedSampleProjects] = useState<string[]>([])
-  const [selectedSampleNotes, setSelectedSampleNotes] = useState<string[]>([])
-  const [buyers, setBuyers] = useState<SampleBuyer[]>([])
-  const [projects, setProjects] = useState<SampleProject[]>([])
-  const [notes, setNotes] = useState<SampleNote[]>([])
   const [isSavingSample, setIsSavingSample] = useState(false)
   const [isDeletingSample, setIsDeletingSample] = useState(false)
 
@@ -3411,6 +7959,39 @@ export default function SpacePage() {
     setMenuOpen(null)
   }
 
+  const handleEditSampleClick = async (sample: Sample) => {
+    setSelectedSample(sample)
+    try {
+      const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+      if (response.ok) {
+        const data = await response.json()
+        setSampleFormData({
+          arrival_date: data.arrival_date || "",
+          style_no: data.style_no || "",
+          sku_no: data.sku_no || "",
+          item: data.item || "",
+          fabrication: data.fabrication || "",
+          weight: data.weight || "",
+          weight_type: data.weight_type || "GM",
+          size_type: data.size_type || "CENTIMETER",
+          types: data.types || "DEVELOPMENT",
+          color: data.color || "",
+          size: data.size || "",
+          comments: data.comments || "",
+          name: data.name || "",
+          description: data.description || "",
+          buyer_uids: data.buyer_uids || [],
+          project_uids: data.project_uids || [],
+          note_uids: data.note_uids || [],
+        })
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+    }
+    setSampleEditModal(true)
+    setSampleMenuOpen(null)
+  }
+
   const handleSaveEdit = async () => {
     if (!selectedSpace || !editFormData.name) return
     setIsSaving(true)
@@ -3427,13 +8008,27 @@ export default function SpacePage() {
         formData.append("parent_uid", currentParentUid)
       }
 
-      const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
-        method: "PUT",
-        body: formData,
-      })
+      // const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+      //   method: "PUT",
+      //   body: formData,
+      // })
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/storage/${selectedSpace.uid}`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${getCookie("access_token")}`,
+              },
+              body: formData,
+            })
+
+            const data = await response.json()
 
       if (!response.ok) {
-        throw new Error("Failed to update space")
+        if (typeof data === "object" && !Array.isArray(data)) {
+          setFieldErrors(data)
+        }
+        toast({ title: "Error", description: "Failed to create space", variant: "destructive" })
+        return
       }
 
       toast({ title: "Success", description: "Space updated successfully" })
@@ -3448,10 +8043,54 @@ export default function SpacePage() {
     }
   }
 
+  const handleSaveSample = async () => {
+    if (!selectedSample || !currentParentUid) return
+    setIsSavingSample(true)
+
+    try {
+      const submitData = {
+        ...sampleFormData,
+        storage_uid: currentParentUid,
+        image_uids: sampleFormData.buyer_uids, // Use existing images
+      }
+
+      const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+        method: "PUT",
+        body: JSON.stringify(submitData),
+      })
+
+      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+      //               method: "PUT",
+      //               headers: {
+      //                 Authorization: `Bearer ${getCookie("access_token")}`,
+      //               },
+      //               body: submitData,
+      //             })
+
+      if (!response.ok) {
+        throw new Error("Failed to update sample")
+      }
+
+      toast({ title: "Success", description: "Sample updated successfully" })
+      setSampleEditModal(false)
+      fetchSpacesAndSamples()
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
+    } finally {
+      setIsSavingSample(false)
+    }
+  }
+
   const handleDeleteClick = (space: Space) => {
     setSelectedSpace(space)
     setDeleteConfirmModal(true)
     setMenuOpen(null)
+  }
+
+  const handleDeleteSampleClick = (sample: Sample) => {
+    setSelectedSample(sample)
+    setSampleDeleteConfirmModal(true)
+    setSampleMenuOpen(null)
   }
 
   const handleConfirmDelete = async () => {
@@ -3473,103 +8112,6 @@ export default function SpacePage() {
     } finally {
       setIsDeleting(false)
     }
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setEditImage(file)
-      const reader = new FileReader()
-      reader.onload = (e) => setEditImagePreview(e.target?.result as string)
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleEditSampleClick = async (sample: Sample) => {
-    setSelectedSample(sample)
-    try {
-      const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSampleEditFormData({
-          name: data.name,
-          description: data.description,
-          style_no: data.style_no,
-          sku_no: data.sku_no,
-          item: data.item,
-          fabrication: data.fabrication,
-          weight: data.weight,
-          color: data.color,
-          size: data.size,
-          comments: data.comments,
-          arrival_date: data.arrival_date,
-        })
-        setSelectedSampleBuyers(data.buyers?.map((b: SampleBuyer) => b.uid) || [])
-        setSelectedSampleProjects(data.projects?.map((p: SampleProject) => p.uid) || [])
-        setSelectedSampleNotes(data.notes?.map((n: SampleNote) => n.uid) || [])
-
-        // Fetch buyers, projects, and notes for the modal
-        const buyersResp = await apiCall("/sample_manager/buyer/")
-        if (buyersResp.ok) {
-          const buyersData = await buyersResp.json()
-          setBuyers(Array.isArray(buyersData) ? buyersData : buyersData.results || [])
-        }
-
-        const projectsResp = await apiCall("/sample_manager/project/")
-        if (projectsResp.ok) {
-          const projectsData = await projectsResp.json()
-          setProjects(Array.isArray(projectsData) ? projectsData : projectsData.results || [])
-        }
-
-        const notesResp = await apiCall("/sample_manager/note/")
-        if (notesResp.ok) {
-          const notesData = await notesResp.json()
-          setNotes(Array.isArray(notesData) ? notesData : notesData.results || [])
-        }
-      }
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
-    }
-    setSampleEditModal(true)
-    setSampleMenuOpen(null)
-  }
-
-  const handleSaveSampleEdit = async () => {
-    if (!selectedSample || !currentParentUid || !sampleEditFormData.name) return
-    setIsSavingSample(true)
-
-    try {
-      const submitData = {
-        ...sampleEditFormData,
-        buyer_uids: selectedSampleBuyers,
-        project_uids: selectedSampleProjects,
-        note_uids: selectedSampleNotes,
-        image_uids: selectedSample.images.map((img) => img.uid),
-      }
-
-      const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
-        method: "PUT",
-        body: JSON.stringify(submitData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update sample")
-      }
-
-      toast({ title: "Success", description: "Sample updated successfully" })
-      setSampleEditModal(false)
-      fetchSpacesAndSamples()
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
-    } finally {
-      setIsSavingSample(false)
-    }
-  }
-
-  const handleDeleteSampleClick = (sample: Sample) => {
-    setSelectedSample(sample)
-    setSampleDeleteConfirmModal(true)
-    setSampleMenuOpen(null)
   }
 
   const handleConfirmDeleteSample = async () => {
@@ -3595,32 +8137,14 @@ export default function SpacePage() {
     }
   }
 
-  const handleSampleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setSampleEditFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSampleBuyerToggle = (buyerUid: string) => {
-    setSelectedSampleBuyers((prev) =>
-      prev.includes(buyerUid) ? prev.filter((uid) => uid !== buyerUid) : [...prev, buyerUid],
-    )
-  }
-
-  const handleSampleProjectToggle = (projectUid: string) => {
-    setSelectedSampleProjects((prev) =>
-      prev.includes(projectUid) ? prev.filter((uid) => uid !== projectUid) : [...prev, projectUid],
-    )
-  }
-
-  const handleSampleNoteToggle = (noteUid: string) => {
-    setSelectedSampleNotes((prev) =>
-      prev.includes(noteUid) ? prev.filter((uid) => uid !== noteUid) : [...prev, noteUid],
-    )
-  }
-
-  const getBreadcrumbText = () => {
-    if (parentStack.length === 0) return "Storage Spaces"
-    return parentStack.map((item) => item.name).join(" > ")
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setEditImage(file)
+      const reader = new FileReader()
+      reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+      reader.readAsDataURL(file)
+    }
   }
 
   return (
@@ -3637,16 +8161,7 @@ export default function SpacePage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2">
-              {parentStack.length > 0
-                ? "Manage spaces and samples in this location"
-                : "Manage your storage spaces and samples"}
-            </p>
-            {parentStack.length > 1 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Path: {parentStack.map((item) => item.name).join(" > ")}
-              </p>
-            )}
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage spaces and samples</p>
           </div>
         </div>
       </div>
@@ -3697,6 +8212,7 @@ export default function SpacePage() {
                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
                         </div>
                       )}
+                      {/* Folder Icon */}
                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
                         <FolderOpen className="w-5 h-5 text-white" />
                       </div>
@@ -3711,6 +8227,7 @@ export default function SpacePage() {
                         {space.description || "No description"}
                       </p>
 
+                      {/* Three Dots Menu */}
                       <div className="relative mb-4">
                         <button
                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
@@ -3738,6 +8255,7 @@ export default function SpacePage() {
                         )}
                       </div>
 
+                      {/* Edit and Delete Buttons */}
                       <div className="flex gap-2 pt-4 border-t border-border">
                         <Button
                           size="sm"
@@ -3772,27 +8290,27 @@ export default function SpacePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {samples.map((sample) => (
                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
-                    <div className="relative h-48 bg-muted overflow-hidden group cursor-pointer">
-                      {sample.images && sample.images.length > 0 ? (
+                    <div className="relative h-48 bg-muted overflow-hidden">
+                      {sample.image ? (
                         <img
-                          src={sample.images[0].file || "/placeholder.svg"}
+                          src={sample.image || "/placeholder.svg"}
                           alt={sample.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
                         </div>
                       )}
-                      <div className="absolute top-3 right-3 z-10">
+                      <div className="absolute top-3 right-3">
                         <button
                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
-                          className="p-2 hover:bg-muted rounded-full transition"
+                          className="p-2 hover:bg-muted rounded-full transition bg-black/50 text-white"
                         >
-                          <MoreVertical className="w-4 h-4 text-white bg-black/50 rounded-full p-1 w-6 h-6" />
+                          <MoreVertical className="w-4 h-4" />
                         </button>
                         {sampleMenuOpen === sample.uid && (
-                          <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-20">
+                          <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
                             <button
                               onClick={() => handleEditSampleClick(sample)}
                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
@@ -3814,7 +8332,6 @@ export default function SpacePage() {
 
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{sample.style_no && `Style: ${sample.style_no}`}</p>
                     </CardHeader>
 
                     <CardContent>
@@ -3870,6 +8387,7 @@ export default function SpacePage() {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
+                {/* Name */}
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
                   <input
@@ -3880,6 +8398,7 @@ export default function SpacePage() {
                   />
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
                   <textarea
@@ -3890,6 +8409,7 @@ export default function SpacePage() {
                   />
                 </div>
 
+                {/* Image */}
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
                   {editImagePreview && (
@@ -3901,11 +8421,8 @@ export default function SpacePage() {
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditImagePreview("")
-                          setEditImage(null)
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        onClick={() => setEditImagePreview("")}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -3919,6 +8436,7 @@ export default function SpacePage() {
                   />
                 </div>
 
+                {/* Submit Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
                   <Button
                     onClick={handleSaveEdit}
@@ -3944,7 +8462,7 @@ export default function SpacePage() {
         </div>
       )}
 
-      {/* Delete Space Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {deleteConfirmModal && selectedSpace && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md border-border">
@@ -3962,7 +8480,7 @@ export default function SpacePage() {
                 <Button
                   onClick={handleConfirmDelete}
                   disabled={isDeleting}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
                 >
                   {isDeleting ? (
                     <>
@@ -3997,196 +8515,29 @@ export default function SpacePage() {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={sampleEditFormData.name}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Style Number</label>
-                    <input
-                      type="text"
-                      name="style_no"
-                      value={sampleEditFormData.style_no}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">SKU Number</label>
-                    <input
-                      type="text"
-                      name="sku_no"
-                      value={sampleEditFormData.sku_no}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Item</label>
-                    <input
-                      type="text"
-                      name="item"
-                      value={sampleEditFormData.item}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Color</label>
-                    <input
-                      type="text"
-                      name="color"
-                      value={sampleEditFormData.color}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Size</label>
-                    <input
-                      type="text"
-                      name="size"
-                      value={sampleEditFormData.size}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
-                    <input
-                      type="text"
-                      name="fabrication"
-                      value={sampleEditFormData.fabrication}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
-                    <input
-                      type="text"
-                      name="weight"
-                      value={sampleEditFormData.weight}
-                      onChange={handleSampleFormChange}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
+                  <input
+                    type="text"
+                    value={sampleFormData.name}
+                    onChange={(e) => setSampleFormData({ ...sampleFormData, name: e.target.value })}
+                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
                   <textarea
-                    name="description"
-                    value={sampleEditFormData.description}
-                    onChange={handleSampleFormChange}
+                    value={sampleFormData.description}
+                    onChange={(e) => setSampleFormData({ ...sampleFormData, description: e.target.value })}
                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    rows={2}
+                    rows={3}
                   />
                 </div>
-
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
-                  <textarea
-                    name="comments"
-                    value={sampleEditFormData.comments}
-                    onChange={handleSampleFormChange}
-                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    rows={2}
-                  />
-                </div>
-
-                {buyers.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Buyers</label>
-                    <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
-                      {buyers.map((buyer) => (
-                        <label key={buyer.uid} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedSampleBuyers.includes(buyer.uid)}
-                            onChange={() => handleSampleBuyerToggle(buyer.uid)}
-                            className="w-4 h-4 rounded border-border"
-                          />
-                          <span className="text-sm text-foreground">{buyer.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {projects.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Projects</label>
-                    <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
-                      {projects.map((project) => (
-                        <label key={project.uid} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedSampleProjects.includes(project.uid)}
-                            onChange={() => handleSampleProjectToggle(project.uid)}
-                            className="w-4 h-4 rounded border-border"
-                          />
-                          <span className="text-sm text-foreground">{project.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {notes.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Notes</label>
-                    <div className="space-y-2 border border-border rounded-lg p-3 bg-card max-h-32 overflow-y-auto">
-                      {notes.map((note) => (
-                        <label key={note.uid} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedSampleNotes.includes(note.uid)}
-                            onChange={() => handleSampleNoteToggle(note.uid)}
-                            className="w-4 h-4 rounded border-border"
-                          />
-                          <span className="text-sm text-foreground">{note.title}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedSample.images.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">
-                      Images ({selectedSample.images.length})
-                    </label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {selectedSample.images.map((img) => (
-                        <img
-                          key={img.uid}
-                          src={img.file || "/placeholder.svg"}
-                          alt={img.file_name}
-                          className="w-full h-20 object-cover rounded-lg border border-border"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
                   <Button
-                    onClick={handleSaveSampleEdit}
+                    onClick={handleSaveSample}
                     disabled={isSavingSample}
                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
                   >
@@ -4229,7 +8580,7 @@ export default function SpacePage() {
                 <Button
                   onClick={handleConfirmDeleteSample}
                   disabled={isDeletingSample}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
                 >
                   {isDeletingSample ? (
                     <>
