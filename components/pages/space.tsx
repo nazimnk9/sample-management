@@ -10549,6 +10549,1517 @@
 // }
 
 
+// "use client"
+
+// import type React from "react"
+
+// import { useState, useEffect } from "react"
+// import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical, Upload, RectangleHorizontal } from "lucide-react"
+
+// import { useToast } from "@/hooks/use-toast"
+// import { apiCall, getCookie } from "@/lib/auth-utils"
+// import Link from "next/link"
+// import { useRouter } from "next/navigation"
+// import {
+//   DropdownMenu,
+//   DropdownMenuTrigger,
+//   DropdownMenuContent,
+//   DropdownMenuCheckboxItem,
+// } from "@/components/ui/dropdown-menu"
+// import { ChevronDown } from "lucide-react"
+
+// interface Space {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   status: string
+//   type: string
+//   company: number
+//   created_by: number
+//   parent: string | null
+// }
+
+// interface Sample {
+//   id: number
+//   uid: string
+//   name: string
+//   description: string
+//   image: string | null
+//   storage_uid: string
+//   images?: Array<{ id: number; uid: string; file: string }>
+// }
+
+// interface Buyer {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface Project {
+//   id: number
+//   uid: string
+//   name: string
+// }
+
+// interface Note {
+//   id: number
+//   uid: string
+//   title: string
+// }
+
+// interface ImageUploadModalProps {
+//   isOpen: boolean
+//   onClose: () => void
+//   existingImages: Array<{ uid: string; file: string }>
+//   onImagesUpload: (uids: string[]) => void
+// }
+
+// function SampleImageUploadModal({ isOpen, onClose, existingImages, onImagesUpload }: ImageUploadModalProps) {
+//   const { toast } = useToast()
+//   const [uploadedImages, setUploadedImages] = useState<Array<{ uid: string; preview: string; isNew: boolean }>>([])
+//   const [isUploading, setIsUploading] = useState(false)
+
+//   useEffect(() => {
+//     if (isOpen) {
+//       const existingPreview = existingImages.map((img) => ({
+//         uid: img.uid,
+//         preview: img.file,
+//         isNew: false,
+//       }))
+//       setUploadedImages(existingPreview)
+//     }
+//   }, [isOpen, existingImages])
+
+//   const compressImage = async (file: File): Promise<Blob> => {
+//     return new Promise((resolve) => {
+//       const reader = new FileReader()
+//       reader.readAsDataURL(file)
+//       reader.onload = (e) => {
+//         const img = new Image()
+//         img.src = e.target?.result as string
+//         img.onload = () => {
+//           const canvas = document.createElement("canvas")
+//           let width = img.width
+//           let height = img.height
+//           let quality = 0.9
+
+//           while (
+//             (canvas.toBlob((blob) => {}, "image/jpeg", quality),
+//             canvas.toDataURL("image/jpeg", quality).length / 1024 > 999) &&
+//             quality > 0.1
+//           ) {
+//             quality -= 0.1
+//           }
+
+//           if (img.width > 1920 || img.height > 1920) {
+//             const maxDim = 1920
+//             if (width > height) {
+//               height = Math.round((height * maxDim) / width)
+//               width = maxDim
+//             } else {
+//               width = Math.round((width * maxDim) / height)
+//               height = maxDim
+//             }
+//           }
+
+//           canvas.width = width
+//           canvas.height = height
+//           const ctx = canvas.getContext("2d")
+//           ctx?.drawImage(img, 0, 0, width, height)
+
+//           canvas.toBlob(
+//             (blob) => {
+//               if (blob) resolve(blob)
+//             },
+//             "image/jpeg",
+//             quality,
+//           )
+//         }
+//       }
+//     })
+//   }
+
+//   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const files = e.currentTarget.files
+//     if (!files) return
+
+//     setIsUploading(true)
+//     try {
+//       for (let i = 0; i < files.length; i++) {
+//         const file = files[i]
+//         const compressedBlob = await compressImage(file)
+
+//         const formData = new FormData()
+//         formData.append("file", new File([compressedBlob], file.name, { type: "image/jpeg" }))
+
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/images/`, {
+//           method: "POST",
+//           headers: {
+//             Authorization: `Bearer ${getCookie("access_token")}`,
+//           },
+//           body: formData,
+//         })
+
+//         if (!response.ok) {
+//           throw new Error("Failed to upload image")
+//         }
+
+//         const data = await response.json()
+//         const imagePreview = URL.createObjectURL(compressedBlob)
+
+//         setUploadedImages((prev) => [...prev, { uid: data.uid, preview: imagePreview, isNew: true }])
+//       }
+
+//       toast({
+//         title: "Success",
+//         description: `${files.length} image(s) uploaded successfully.`,
+//       })
+//     } catch (err) {
+//       toast({
+//         title: "Error",
+//         description: "Failed to upload images. Please try again.",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsUploading(false)
+//     }
+//   }
+
+//   const handleRemoveImage = (uid: string) => {
+//     setUploadedImages((prev) => prev.filter((img) => img.uid !== uid))
+//   }
+
+//   const handleConfirm = () => {
+//     const allImageUids = uploadedImages.map((img) => img.uid)
+//     if (allImageUids.length > 0) {
+//       onImagesUpload(allImageUids)
+//       onClose()
+//     }
+//   }
+
+//   if (!isOpen) return null
+
+//   return (
+//     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//       <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//         <CardContent className="pt-6">
+//           <div className="flex items-center justify-between mb-6">
+//             <h2 className="text-xl font-bold text-foreground">Manage Sample Images</h2>
+//             <button onClick={onClose} className="p-1 hover:bg-muted rounded">
+//               <X className="w-5 h-5" />
+//             </button>
+//           </div>
+
+//           <div className="border-2 border-dashed border-border rounded-lg p-6 mb-6 text-center">
+//             <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+//             <p className="text-sm text-muted-foreground mb-4">Add more images or click to select</p>
+//             <input
+//               type="file"
+//               multiple
+//               accept="image/*"
+//               onChange={handleFileSelect}
+//               disabled={isUploading}
+//               className="hidden"
+//               id="sample-image-input-update"
+//             />
+//             <label htmlFor="sample-image-input-update">
+//               <Button
+//                 asChild
+//                 disabled={isUploading}
+//                 className="bg-primary hover:bg-primary/90 text-white cursor-pointer"
+//               >
+//                 <span>{isUploading ? "Uploading..." : "Select Images"}</span>
+//               </Button>
+//             </label>
+//             <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p>
+//           </div>
+
+//           {uploadedImages.length > 0 && (
+//             <div>
+//               <p className="text-sm font-medium text-foreground mb-3">Images ({uploadedImages.length})</p>
+//               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+//                 {uploadedImages.map((img) => (
+//                   <div key={img.uid} className="relative group">
+//                     <img
+//                       src={img.preview || "/placeholder.svg"}
+//                       alt="preview"
+//                       className="w-full h-32 object-cover rounded-lg border border-border"
+//                     />
+//                     <button
+//                       onClick={() => handleRemoveImage(img.uid)}
+//                       className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+//                     >
+//                       <X className="w-4 h-4" />
+//                     </button>
+//                   </div>
+//                 ))}
+//               </div>
+
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button onClick={handleConfirm} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+//                   Confirm Images
+//                 </Button>
+//                 <Button onClick={onClose} variant="outline" className="flex-1 bg-transparent">
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </div>
+//           )}
+//         </CardContent>
+//       </Card>
+//     </div>
+//   )
+// }
+
+// export default function SpacePage() {
+//   const { toast } = useToast()
+//   const router = useRouter()
+//   const [spaces, setSpaces] = useState<Space[]>([])
+//   const [samples, setSamples] = useState<Sample[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+//   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
+//   const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+
+//   // Modals
+//   const [editModal, setEditModal] = useState(false)
+//   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
+//   const [sampleEditModal, setSampleEditModal] = useState(false)
+//   const [sampleDeleteConfirmModal, setSampleDeleteConfirmModal] = useState(false)
+//   const [imageUploadOpen, setImageUploadOpen] = useState(false)
+//   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+//   const [sampleMenuOpen, setSampleMenuOpen] = useState<string | null>(null)
+//   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+//   const [selectedSample, setSelectedSample] = useState<Sample | null>(null)
+//   const [sampleDetailsModal, setSampleDetailsModal] = useState(false)
+//   const [sampleDetails, setSampleDetails] = useState<any>(null)
+//   const [sampleDetailsLoading, setSampleDetailsLoading] = useState(false)
+
+//   // Edit form
+//   const [editFormData, setEditFormData] = useState({ name: "", description: "" })
+//   const [editImage, setEditImage] = useState<File | null>(null)
+//   const [editImagePreview, setEditImagePreview] = useState<string>("")
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [isDeleting, setIsDeleting] = useState(false)
+
+//   // Sample edit
+//   const [sampleEditData, setSampleEditData] = useState<any>(null)
+//   const [sampleEditImages, setSampleEditImages] = useState<any[]>([])
+//   const [sampleIsSaving, setSampleIsSaving] = useState(false)
+//   const [sampleIsDeleting, setSampleIsDeleting] = useState(false)
+//   const [sampleEditLoading, setSampleEditLoading] = useState(false)
+
+//   // Sample data
+//   const [buyers, setBuyers] = useState<Buyer[]>([])
+//   const [projects, setProjects] = useState<Project[]>([])
+//   const [notes, setNotes] = useState<Note[]>([])
+
+//   useEffect(() => {
+//     fetchSpacesAndSamples()
+//     fetchDropdownData()
+//   }, [currentParentUid])
+
+//   const fetchDropdownData = async () => {
+//     try {
+//       const [buyersRes, projectsRes, notesRes] = await Promise.all([
+//         apiCall("/sample_manager/buyer/"),
+//         apiCall("/sample_manager/project/"),
+//         apiCall("/sample_manager/note/"),
+//       ])
+
+//       if (buyersRes.ok) {
+//         const buyersData = await buyersRes.json()
+//         setBuyers(Array.isArray(buyersData) ? buyersData : buyersData.results || [])
+//       }
+
+//       if (projectsRes.ok) {
+//         const projectsData = await projectsRes.json()
+//         setProjects(Array.isArray(projectsData) ? projectsData : projectsData.results || [])
+//       }
+
+//       if (notesRes.ok) {
+//         const notesData = await notesRes.json()
+//         setNotes(Array.isArray(notesData) ? notesData : notesData.results || [])
+//       }
+//     } catch (err) {
+//       console.error("Error fetching dropdown data:", err)
+//     }
+//   }
+
+//   const fetchSpacesAndSamples = async () => {
+//     setIsLoading(true)
+//     try {
+//       const spacesUrl = currentParentUid
+//         ? `/sample_manager/storage/?type=SPACE&parent_uid=${currentParentUid}`
+//         : `/sample_manager/storage/?type=SPACE`
+
+//       const spacesResponse = await apiCall(spacesUrl)
+//       if (spacesResponse.ok) {
+//         const spacesData = await spacesResponse.json()
+//         setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+//       }
+
+//       if (currentParentUid) {
+//         const samplesResponse = await apiCall(`/sample_manager/sample/${currentParentUid}`)
+//         if (samplesResponse.ok) {
+//           const samplesData = await samplesResponse.json()
+//           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+//         }
+//       } else {
+//         setSamples([]) // Clear samples if not in a specific space
+//       }
+//     } catch (err) {
+//       console.error("Error fetching data:", err)
+//       toast({
+//         title: "Error",
+//         description: "Failed to fetch spaces and samples",
+//         variant: "destructive",
+//       })
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   const handleSpaceCardClick = (space: Space) => {
+//     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
+//     setCurrentParentUid(space.uid)
+//   }
+
+//   const handleBackClick = () => {
+//     if (parentStack.length > 0) {
+//       const newStack = parentStack.slice(0, -1)
+//       setParentStack(newStack)
+//       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+//       setSamples([])
+//     }
+//   }
+
+//   const handleEditClick = async (space: Space) => {
+//     setSelectedSpace(space)
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setEditFormData({ name: data.name, description: data.description })
+//         if (data.image) {
+//           setEditImagePreview(data.image)
+//         }
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+//     }
+//     setEditModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleSaveEdit = async () => {
+//     if (!selectedSpace || !editFormData.name) return
+//     setIsSaving(true)
+
+//     try {
+//       const formData = new FormData()
+//       formData.append("name", editFormData.name)
+//       formData.append("description", editFormData.description)
+//       formData.append("type", "SPACE")
+//       if (editImage) {
+//         formData.append("image", editImage)
+//       }
+//       if (currentParentUid) {
+//         formData.append("parent_uid", currentParentUid)
+//       }
+
+//       // const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
+//       //   method: "PUT",
+//       //   body: formData,
+//       // })
+
+// const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/storage/${selectedSpace.uid}`, {
+//           method: "PUT",
+//           headers: {
+//             Authorization: `Bearer ${getCookie("access_token")}`,
+//           },
+//           body: formData,
+//         })
+
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update space")
+//       }
+
+//       const data = await response.json()
+
+//       toast({ title: "Success", description: "Space updated successfully" })
+//       setEditModal(false)
+//       setEditImage(null)
+//       setEditImagePreview("")
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update space", variant: "destructive" })
+//     } finally {
+//       setIsSaving(false)
+//     }
+//   }
+
+//   const handleDeleteClick = (space: Space) => {
+//     setSelectedSpace(space)
+//     setDeleteConfirmModal(true)
+//     setMenuOpen(null)
+//   }
+
+//   const handleConfirmDelete = async () => {
+//     if (!selectedSpace) return
+//     setIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, { method: "DELETE" })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete space")
+//       }
+
+//       toast({ title: "Success", description: "Space deleted successfully" })
+//       setDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete space", variant: "destructive" })
+//     } finally {
+//       setIsDeleting(false)
+//     }
+//   }
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0]
+//     if (file) {
+//       setEditImage(file)
+//       const reader = new FileReader()
+//       reader.onload = (e) => setEditImagePreview(e.target?.result as string)
+//       reader.readAsDataURL(file)
+//     }
+//   }
+
+//   const handleSampleEditClick = async (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleEditLoading(true)
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSampleEditData(data)
+//         setSampleEditImages(data.images || [])
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     } finally {
+//       setSampleEditLoading(false)
+//     }
+//     setSampleEditModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleSampleSaveEdit = async () => {
+//     if (!selectedSample || !currentParentUid || !sampleEditData) return
+//     setSampleIsSaving(true)
+
+//     try {
+//       const submitData = {
+//         arrival_date: sampleEditData.arrival_date,
+//         style_no: sampleEditData.style_no,
+//         sku_no: sampleEditData.sku_no,
+//         item: sampleEditData.item,
+//         fabrication: sampleEditData.fabrication,
+//         weight: sampleEditData.weight,
+//         weight_type: sampleEditData.weight_type,
+//         size_type: sampleEditData.size_type,
+//         types: sampleEditData.types,
+//         color: sampleEditData.color,
+//         size: sampleEditData.size,
+//         comments: sampleEditData.comments,
+//         name: sampleEditData.name,
+//         description: sampleEditData.description,
+//         image_uids: sampleEditImages.map((img) => img.uid),
+//         buyer_uids: sampleEditData.buyers?.map((b: any) => b.uid) || [],
+//         project_uids: sampleEditData.projects?.map((p: any) => p.uid) || [],
+//         note_uids: sampleEditData.notes?.map((n: any) => n.uid) || [],
+//         storage_uid: currentParentUid,
+//       }
+
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "PUT",
+//         body: JSON.stringify(submitData),
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to update sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample updated successfully" })
+//       setSampleEditModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
+//     } finally {
+//       setSampleIsSaving(false)
+//     }
+//   }
+
+//   const handleSampleDeleteClick = (sample: Sample) => {
+//     setSelectedSample(sample)
+//     setSampleDeleteConfirmModal(true)
+//     setSampleMenuOpen(null)
+//   }
+
+//   const handleSampleConfirmDelete = async () => {
+//     if (!selectedSample || !currentParentUid) return
+//     setSampleIsDeleting(true)
+
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+//         method: "DELETE",
+//       })
+
+//       if (!response.ok) {
+//         throw new Error("Failed to delete sample")
+//       }
+
+//       toast({ title: "Success", description: "Sample deleted successfully" })
+//       setSampleDeleteConfirmModal(false)
+//       fetchSpacesAndSamples()
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
+//     } finally {
+//       setSampleIsDeleting(false)
+//     }
+//   }
+
+//   const handleSampleImageRemove = (imageUid: string) => {
+//     setSampleEditImages((prev) => prev.filter((img) => img.uid !== imageUid))
+//   }
+
+//   const handleSampleImagesUpload = (uids: string[]) => {
+//     const newImages = uids.map((uid) => {
+//       const existingImage = sampleEditImages.find((img) => img.uid === uid)
+//       return existingImage || { uid, file: "" }
+//     })
+//     setSampleEditImages(newImages)
+//   }
+
+//   const handleSampleDetailsClick = async (sample: Sample) => {
+//     setSampleDetailsLoading(true)
+//     try {
+//       const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+//       if (response.ok) {
+//         const data = await response.json()
+//         setSampleDetails(data)
+//       } else {
+//         toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//       }
+//     } catch (err) {
+//       toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
+//     } finally {
+//       setSampleDetailsLoading(false)
+//       setSampleDetailsModal(true)
+//     }
+//   }
+
+//   const getBreadcrumbPath = () => {
+//     if (parentStack.length === 0) return "Storage Spaces"
+//     const names = parentStack.map((item) => item.name)
+//     return names.join(" / ")
+//   }
+
+//   return (
+//     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
+//       <div className="mb-6 sm:mb-8 flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           {parentStack.length > 0 && (
+//             <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
+//               <ChevronLeft className="w-5 h-5" />
+//             </button>
+//           )}
+//           <div>
+//             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+//               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
+//             </h1>
+//             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+//               {parentStack.length > 1 && `Path: ${getBreadcrumbPath()}`}
+//             </p>
+//             <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage spaces and samples</p>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add Buttons */}
+//       <div className="flex gap-2 mb-6 sm:mb-8 flex-wrap">
+//         <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+//           <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+//             <Plus className="w-4 h-4" />
+//             Add Space
+//           </Button>
+//         </Link>
+//         {currentParentUid && (
+//           <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+//             <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+//               <Plus className="w-4 h-4" />
+//               Add Sample
+//             </Button>
+//           </Link>
+//         )}
+//       </div>
+
+//       {isLoading ? (
+//         <div className="flex items-center justify-center py-12">
+//           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+//         </div>
+//       ) : (
+//         <>
+//           {/* Spaces Grid */}
+//           {spaces.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+//                 {spaces.map((space) => (
+//                   <Card
+//                     key={space.uid}
+//                     className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
+//                       {space.image ? (
+//                         <img
+//                           src={space.image || "/placeholder.svg"}
+//                           alt={space.name}
+//                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <FolderOpen className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
+//                         <FolderOpen className="w-5 h-5 text-white" />
+//                       </div>
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {space.description || "No description"}
+//                       </p>
+
+//                       <div className="relative mb-4">
+//                         {/* <button
+//                           onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button> */}
+//                         {menuOpen === space.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleEditClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(space)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleEditClick(space)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleDeleteClick(space)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {samples.length > 0 && (
+//             <div>
+//               <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {samples.map((sample) => (
+//                   <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer"
+//                   >
+//                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSampleDetailsClick(sample)}>
+//                       {sample.images && sample.images.length > 0 ? (
+//                         <img
+//                           src={sample.images[0].file || "/placeholder.svg"}
+//                           alt={sample.name}
+//                           className="w-full h-full object-cover hover:scale-105 transition-transform"
+//                         />
+//                       ) : (
+//                         <div className="w-full h-full flex items-center justify-center bg-muted">
+//                           <RectangleHorizontal className="w-12 h-12 text-muted-foreground" />
+//                         </div>
+//                       )}
+//                     </div>
+
+//                     <CardHeader className="pb-2">
+//                       <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
+//                     </CardHeader>
+
+//                     <CardContent>
+//                       <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+//                         {sample.description || "No description"}
+//                       </p>
+
+//                       <div className="relative mb-4">
+//                         {/* <button
+//                           onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
+//                           className="p-2 hover:bg-muted rounded-full transition"
+//                         >
+//                           <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//                         </button> */}
+//                         {sampleMenuOpen === sample.uid && (
+//                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
+//                             <button
+//                               onClick={() => handleSampleEditClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Edit2 className="w-4 h-4" />
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleSampleDeleteClick(sample)}
+//                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+//                             >
+//                               <Trash2 className="w-4 h-4" />
+//                               Delete
+//                             </button>
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="flex gap-2 pt-4 border-t border-border">
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleSampleEditClick(sample)}
+//                         >
+//                           <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Edit
+//                         </Button>
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
+//                           onClick={() => handleSampleDeleteClick(sample)}
+//                         >
+//                           <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
+//                           Delete
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
+
+//           {spaces.length === 0 && samples.length === 0 && (
+//             <div className="text-center py-12">
+//               <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+//               <p className="text-muted-foreground">No spaces or samples found</p>
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Existing modals */}
+//       {editModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Space - {selectedSpace.name}</CardTitle>
+//               <button onClick={() => setEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <div className="space-y-4">
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Space Name</label>
+//                   <input
+//                     type="text"
+//                     value={editFormData.name}
+//                     onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                   <textarea
+//                     value={editFormData.description}
+//                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     rows={3}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
+//                   {editImagePreview && (
+//                     <div className="mb-3 relative">
+//                       <img
+//                         src={editImagePreview || "/placeholder.svg"}
+//                         alt="Preview"
+//                         className="w-full h-40 object-cover rounded-lg"
+//                       />
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setEditImagePreview("")
+//                           setEditImage(null)
+//                         }}
+//                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   )}
+//                   <input
+//                     type="file"
+//                     onChange={handleImageChange}
+//                     accept="image/*"
+//                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                   />
+//                 </div>
+
+//                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                   <Button
+//                     onClick={handleSaveEdit}
+//                     disabled={isSaving}
+//                     className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                   >
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                         Updating...
+//                       </>
+//                     ) : (
+//                       "Update"
+//                     )}
+//                   </Button>
+//                   <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
+//                     Cancel
+//                   </Button>
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleEditModal && selectedSample && sampleEditData && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[100vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
+//               <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               {sampleEditLoading ? (
+//                 <div className="flex items-center justify-center py-6">
+//                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
+//                 </div>
+//               ) : (
+//                 <div className="space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto">
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Sample Name</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.name}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, name: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Description</label>
+//                     <textarea
+//                       value={sampleEditData.description}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, description: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                       rows={3}
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Style No</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.style_no}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, style_no: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">SKU No</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.sku_no}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, sku_no: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Item</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.item}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, item: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Color</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.color}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, color: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.fabrication}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, fabrication: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
+//                     <input
+//                       type="text"
+//                       value={sampleEditData.weight}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, weight: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
+//                     <textarea
+//                       value={sampleEditData.comments}
+//                       onChange={(e) => setSampleEditData({ ...sampleEditData, comments: e.target.value })}
+//                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                       rows={2}
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Buyers</label>
+//                     <DropdownMenu>
+//                       <DropdownMenuTrigger asChild>
+//                         <button
+//                           type="button"
+//                           className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:ring-primary"
+//                         >
+//                           <span
+//                             className={sampleEditData.buyers?.length > 0 ? "text-foreground" : "text-muted-foreground"}
+//                           >
+//                             {sampleEditData.buyers?.length > 0
+//                               ? `${sampleEditData.buyers.length} buyer(s) selected`
+//                               : "Select buyers..."}
+//                           </span>
+//                           <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+//                         </button>
+//                       </DropdownMenuTrigger>
+//                       <DropdownMenuContent align="start" className="w-56">
+//                         {buyers.length > 0 ? (
+//                           <div>
+//                             {buyers.map((buyer) => (
+//                               <DropdownMenuCheckboxItem
+//                                 key={buyer.uid}
+//                                 checked={sampleEditData.buyers?.some((b: any) => b.uid === buyer.uid)}
+//                                 onCheckedChange={() => {
+//                                   const current = sampleEditData.buyers || []
+//                                   const isSelected = current.some((b: any) => b.uid === buyer.uid)
+//                                   setSampleEditData({
+//                                     ...sampleEditData,
+//                                     buyers: isSelected
+//                                       ? current.filter((b: any) => b.uid !== buyer.uid)
+//                                       : [...current, buyer],
+//                                   })
+//                                 }}
+//                               >
+//                                 {buyer.name}
+//                               </DropdownMenuCheckboxItem>
+//                             ))}
+//                           </div>
+//                         ) : (
+//                           <div className="p-2 text-sm text-muted-foreground">No buyers available</div>
+//                         )}
+//                       </DropdownMenuContent>
+//                     </DropdownMenu>
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Projects</label>
+//                     <DropdownMenu>
+//                       <DropdownMenuTrigger asChild>
+//                         <button
+//                           type="button"
+//                           className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:ring-primary"
+//                         >
+//                           <span
+//                             className={
+//                               sampleEditData.projects?.length > 0 ? "text-foreground" : "text-muted-foreground"
+//                             }
+//                           >
+//                             {sampleEditData.projects?.length > 0
+//                               ? `${sampleEditData.projects.length} project(s) selected`
+//                               : "Select projects..."}
+//                           </span>
+//                           <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+//                         </button>
+//                       </DropdownMenuTrigger>
+//                       <DropdownMenuContent align="start" className="w-56">
+//                         {projects.length > 0 ? (
+//                           <div>
+//                             {projects.map((project) => (
+//                               <DropdownMenuCheckboxItem
+//                                 key={project.uid}
+//                                 checked={sampleEditData.projects?.some((p: any) => p.uid === project.uid)}
+//                                 onCheckedChange={() => {
+//                                   const current = sampleEditData.projects || []
+//                                   const isSelected = current.some((p: any) => p.uid === project.uid)
+//                                   setSampleEditData({
+//                                     ...sampleEditData,
+//                                     projects: isSelected
+//                                       ? current.filter((p: any) => p.uid !== project.uid)
+//                                       : [...current, project],
+//                                   })
+//                                 }}
+//                               >
+//                                 {project.name}
+//                               </DropdownMenuCheckboxItem>
+//                             ))}
+//                           </div>
+//                         ) : (
+//                           <div className="p-2 text-sm text-muted-foreground">No projects available</div>
+//                         )}
+//                       </DropdownMenuContent>
+//                     </DropdownMenu>
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">Notes</label>
+//                     <DropdownMenu>
+//                       <DropdownMenuTrigger asChild>
+//                         <button
+//                           type="button"
+//                           className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:ring-primary"
+//                         >
+//                           <span
+//                             className={sampleEditData.notes?.length > 0 ? "text-foreground" : "text-muted-foreground"}
+//                           >
+//                             {sampleEditData.notes?.length > 0
+//                               ? `${sampleEditData.notes.length} note(s) selected`
+//                               : "Select notes..."}
+//                           </span>
+//                           <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+//                         </button>
+//                       </DropdownMenuTrigger>
+//                       <DropdownMenuContent align="start" className="w-56">
+//                         {notes.length > 0 ? (
+//                           <div>
+//                             {notes.map((note) => (
+//                               <DropdownMenuCheckboxItem
+//                                 key={note.uid}
+//                                 checked={sampleEditData.notes?.some((n: any) => n.uid === note.uid)}
+//                                 onCheckedChange={() => {
+//                                   const current = sampleEditData.notes || []
+//                                   const isSelected = current.some((n: any) => n.uid === note.uid)
+//                                   setSampleEditData({
+//                                     ...sampleEditData,
+//                                     notes: isSelected
+//                                       ? current.filter((n: any) => n.uid !== note.uid)
+//                                       : [...current, note],
+//                                   })
+//                                 }}
+//                               >
+//                                 {note.title}
+//                               </DropdownMenuCheckboxItem>
+//                             ))}
+//                           </div>
+//                         ) : (
+//                           <div className="p-2 text-sm text-muted-foreground">No notes available</div>
+//                         )}
+//                       </DropdownMenuContent>
+//                     </DropdownMenu>
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-foreground block mb-2">
+//                       Sample Images ({sampleEditImages.length})
+//                     </label>
+//                     <Button
+//                       type="button"
+//                       onClick={() => setImageUploadOpen(true)}
+//                       className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+//                     >
+//                       <Upload className="w-4 h-4" />
+//                       Manage Images
+//                     </Button>
+//                   </div>
+
+//                   {sampleEditImages.length > 0 && (
+//                     <div>
+//                       <label className="text-sm font-medium text-foreground block mb-2">
+//                         Current Images ({sampleEditImages.length})
+//                       </label>
+//                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+//                         {sampleEditImages.map((img) => (
+//                           <div key={img.uid} className="relative group">
+//                             <img
+//                               src={img.file || "/placeholder.svg"}
+//                               alt="sample"
+//                               className="w-full h-24 object-cover rounded-lg border border-border"
+//                             />
+//                             <button
+//                               type="button"
+//                               onClick={() => handleSampleImageRemove(img.uid)}
+//                               className="absolute top-1 right-1 bg-red-500 text-white p-0.5 rounded opacity-0 group-hover:opacity-100 transition"
+//                             >
+//                               <X className="w-3 h-3" />
+//                             </button>
+//                           </div>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+//                     <Button
+//                       onClick={handleSampleSaveEdit}
+//                       disabled={sampleIsSaving}
+//                       className="flex-1 bg-primary hover:bg-primary/90 text-white"
+//                     >
+//                       {sampleIsSaving ? (
+//                         <>
+//                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                           Updating...
+//                         </>
+//                       ) : (
+//                         "Update"
+//                       )}
+//                     </Button>
+//                     <Button
+//                       variant="outline"
+//                       className="flex-1 bg-transparent"
+//                       onClick={() => setSampleEditModal(false)}
+//                     >
+//                       Cancel
+//                     </Button>
+//                   </div>
+//                 </div>
+//               )}
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       <SampleImageUploadModal
+//         isOpen={imageUploadOpen}
+//         onClose={() => setImageUploadOpen(false)}
+//         existingImages={sampleEditImages}
+//         onImagesUpload={handleSampleImagesUpload}
+//       />
+
+//       {sampleDetailsModal && sampleDetails && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3 sticky top-0 bg-background">
+//               <CardTitle className="text-lg sm:text-xl">{sampleDetails.name}</CardTitle>
+//               <button onClick={() => setSampleDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+
+//             <CardContent className="pt-4 space-y-4">
+//               {sampleDetailsLoading ? (
+//                 <div className="flex items-center justify-center py-8">
+//                   <div className="w-8 h-8 border-2 border-muted-foreground border-t-foreground rounded-full animate-spin"></div>
+//                 </div>
+//               ) : (
+//                 <>
+//                   {/* Images Section */}
+//                   {sampleDetails.images && sampleDetails.images.length > 0 && (
+//                     <div>
+//                       <h3 className="font-semibold text-foreground mb-2">Images</h3>
+//                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+//                         {sampleDetails.images.map((image: any) => (
+//                           <img
+//                             key={image.uid}
+//                             src={image.file || "/placeholder.svg"}
+//                             alt={image.file_name}
+//                             className="w-full h-32 object-cover rounded border border-border"
+//                           />
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {/* Basic Information */}
+//                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 border-t border-b border-border">
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Style No</label>
+//                       <p className="text-foreground">{sampleDetails.style_no || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">SKU No</label>
+//                       <p className="text-foreground">{sampleDetails.sku_no || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Item</label>
+//                       <p className="text-foreground">{sampleDetails.item || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Fabrication</label>
+//                       <p className="text-foreground">{sampleDetails.fabrication || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Color</label>
+//                       <p className="text-foreground">{sampleDetails.color || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Size</label>
+//                       <p className="text-foreground">{sampleDetails.size || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Weight</label>
+//                       <p className="text-foreground">
+//                         {sampleDetails.weight} {sampleDetails.weight_type || "-"}
+//                       </p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Size Type</label>
+//                       <p className="text-foreground">{sampleDetails.size_type || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Type</label>
+//                       <p className="text-foreground">{sampleDetails.types || "-"}</p>
+//                     </div>
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Arrival Date</label>
+//                       <p className="text-foreground">
+//                         {sampleDetails.arrival_date ? new Date(sampleDetails.arrival_date).toLocaleDateString() : "-"}
+//                       </p>
+//                     </div>
+//                   </div>
+
+//                   {/* Description */}
+//                   {sampleDetails.description && (
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Description</label>
+//                       <p className="text-foreground text-sm">{sampleDetails.description}</p>
+//                     </div>
+//                   )}
+
+//                   {/* Comments */}
+//                   {sampleDetails.comments && (
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Comments</label>
+//                       <p className="text-foreground text-sm">{sampleDetails.comments}</p>
+//                     </div>
+//                   )}
+
+//                   {/* Buyers Section */}
+//                   {sampleDetails.buyers && sampleDetails.buyers.length > 0 && (
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Buyers</label>
+//                       <div className="flex flex-wrap gap-2 mt-1">
+//                         {sampleDetails.buyers.map((buyer: any) => (
+//                           <div key={buyer.uid} className="bg-muted px-2 py-1 rounded text-xs text-foreground">
+//                             {buyer.name || buyer.uid}
+//                           </div>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {/* Projects Section */}
+//                   {sampleDetails.projects && sampleDetails.projects.length > 0 && (
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Projects</label>
+//                       <div className="flex flex-wrap gap-2 mt-1">
+//                         {sampleDetails.projects.map((project: any) => (
+//                           <div key={project.uid} className="bg-muted px-2 py-1 rounded text-xs text-foreground">
+//                             {project.name || project.uid}
+//                           </div>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {/* Notes Section */}
+//                   {sampleDetails.notes && sampleDetails.notes.length > 0 && (
+//                     <div>
+//                       <label className="text-xs font-semibold text-muted-foreground uppercase">Notes</label>
+//                       <div className="space-y-1 mt-1">
+//                         {sampleDetails.notes.map((note: any) => (
+//                           <div key={note.uid} className="bg-muted p-2 rounded text-xs text-foreground">
+//                             {note.title || note.uid}
+//                           </div>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {/* Status */}
+//                   <div className="pt-4 border-t border-border">
+//                     <label className="text-xs font-semibold text-muted-foreground uppercase mr-2">Status</label>
+//                     <p className="text-foreground inline-block bg-muted px-2 py-1 rounded text-sm">
+//                       {sampleDetails.status || "-"}
+//                     </p>
+//                   </div>
+//                 </>
+//               )}
+//             </CardContent>
+
+//             <CardFooter className="border-t border-border flex justify-end gap-2">
+//               <Button variant="outline" onClick={() => setSampleDetailsModal(false)}>
+//                 Close
+//               </Button>
+//             </CardFooter>
+//           </Card>
+//         </div>
+//       )}
+
+//       {/* Delete Confirmation Modals */}
+//       {deleteConfirmModal && selectedSpace && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Space</CardTitle>
+//               <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleConfirmDelete}
+//                   disabled={isDeleting}
+//                   className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
+//                 >
+//                   {isDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+
+//       {sampleDeleteConfirmModal && selectedSample && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <Card className="w-full max-w-md border-border">
+//             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+//               <CardTitle className="text-lg">Delete Sample</CardTitle>
+//               <button
+//                 onClick={() => setSampleDeleteConfirmModal(false)}
+//                 className="p-1 hover:bg-muted rounded flex-shrink-0"
+//               >
+//                 <X className="w-5 h-5" />
+//               </button>
+//             </CardHeader>
+//             <CardContent className="pt-6">
+//               <p className="text-sm text-foreground mb-6">
+//                 Are you sure you want to delete sample "{selectedSample.name}"? This action cannot be undone.
+//               </p>
+//               <div className="flex flex-col sm:flex-row gap-3">
+//                 <Button
+//                   onClick={handleSampleConfirmDelete}
+//                   disabled={sampleIsDeleting}
+//                   className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
+//                 >
+//                   {sampleIsDeleting ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Deleting...
+//                     </>
+//                   ) : (
+//                     "Delete"
+//                   )}
+//                 </Button>
+//                 <Button
+//                   variant="outline"
+//                   className="flex-1 bg-transparent"
+//                   onClick={() => setSampleDeleteConfirmModal(false)}
+//                 >
+//                   Cancel
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+
 "use client"
 
 import type React from "react"
@@ -10556,12 +12067,12 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical, Upload, RectangleHorizontal } from "lucide-react"
+import { Plus, Trash2, CreditCard as Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical, Upload, RectangleHorizontal } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
 import { apiCall, getCookie } from "@/lib/auth-utils"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -10818,11 +12329,16 @@ function SampleImageUploadModal({ isOpen, onClose, existingImages, onImagesUploa
 export default function SpacePage() {
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Read currentParentUid from URL parameters
+  const urlCurrentParentUid = searchParams.get("currentParentUid")
+  
   const [spaces, setSpaces] = useState<Space[]>([])
   const [samples, setSamples] = useState<Sample[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
-  const [currentParentUid, setCurrentParentUid] = useState<string | null>(null)
+  const [currentParentUid, setCurrentParentUid] = useState<string | null>(urlCurrentParentUid)
 
   // Modals
   const [editModal, setEditModal] = useState(false)
@@ -10856,6 +12372,28 @@ export default function SpacePage() {
   const [buyers, setBuyers] = useState<Buyer[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [notes, setNotes] = useState<Note[]>([])
+
+  // Build parent stack when currentParentUid is set from URL
+  useEffect(() => {
+    const buildParentStack = async () => {
+      if (urlCurrentParentUid && parentStack.length === 1) {
+        try {
+          // Fetch the current space details to build the parent stack
+          const response = await apiCall(`/sample_manager/storage/${urlCurrentParentUid}`)
+          if (response.ok) {
+            const spaceData = await response.json()
+            // For simplicity, just add this space to the stack
+            // In a real implementation, you'd want to fetch the full hierarchy
+            setParentStack([{ uid: spaceData.uid, name: spaceData.name }])
+          }
+        } catch (err) {
+          console.error("Error building parent stack:", err)
+        }
+      }
+    }
+
+    buildParentStack()
+  }, [urlCurrentParentUid, parentStack.length])
 
   useEffect(() => {
     fetchSpacesAndSamples()
@@ -10908,6 +12446,8 @@ export default function SpacePage() {
           const samplesData = await samplesResponse.json()
           setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
         }
+      } else {
+        setSamples([]) // Clear samples if not in a specific space
       }
     } catch (err) {
       console.error("Error fetching data:", err)
@@ -10924,13 +12464,22 @@ export default function SpacePage() {
   const handleSpaceCardClick = (space: Space) => {
     setParentStack([...parentStack, { uid: space.uid, name: space.name }])
     setCurrentParentUid(space.uid)
+    // Update URL to maintain the current state
+    const newUrl = `/space?currentParentUid=${space.uid}`
+    router.push(newUrl)
   }
 
   const handleBackClick = () => {
     if (parentStack.length > 0) {
       const newStack = parentStack.slice(0, -1)
       setParentStack(newStack)
-      setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+      const newParentUid = newStack.length > 0 ? newStack[newStack.length - 1].uid : null
+      setCurrentParentUid(newParentUid)
+      setSamples([])
+      
+      // Update URL to reflect the new state
+      const newUrl = newParentUid ? `/space?currentParentUid=${newParentUid}` : '/space'
+      router.push(newUrl)
     }
   }
 
@@ -10968,19 +12517,13 @@ export default function SpacePage() {
         formData.append("parent_uid", currentParentUid)
       }
 
-      // const response = await apiCall(`/sample_manager/storage/${selectedSpace.uid}`, {
-      //   method: "PUT",
-      //   body: formData,
-      // })
-
-const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/storage/${selectedSpace.uid}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_manager/storage/${selectedSpace.uid}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${getCookie("access_token")}`,
           },
           body: formData,
         })
-
 
       if (!response.ok) {
         throw new Error("Failed to update space")
@@ -11161,10 +12704,9 @@ const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_man
     }
   }
 
-  const getBreadcrumbPath = () => {
+   const getBreadcrumbText = () => {
     if (parentStack.length === 0) return "Storage Spaces"
-    const names = parentStack.map((item) => item.name)
-    return names.join(" / ")
+    return parentStack.map((item) => item.name).join(" / ")
   }
 
   return (
@@ -11176,14 +12718,48 @@ const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_man
               <ChevronLeft className="w-5 h-5" />
             </button>
           )}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+          {/* <div>
+            {/* <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Storage Spaces"}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              {parentStack.length > 1 && `Path: ${getBreadcrumbPath()}`}
+              {parentStack.length > 0 && `Path: ${getBreadcrumbPath()}`}
             </p>
+
+            <span className="cursor-pointer hover:text-foreground" onClick={() => setCurrentParentUid(null)}>
+          Storage Spaces
+        </span>
+        {parentStack.map((space, index) => (
+          <div key={space.uid} className="flex items-center gap-2">
+            <span>/</span>
+            <span
+              className="cursor-pointer hover:text-foreground"
+              onClick={() => {
+                const newStack = parentStack.slice(0, index + 1)
+                setParentStack(newStack)
+                setCurrentParentUid(newStack[newStack.length - 1].uid)
+              }}
+            >
+              {space.name}
+            </span>
+          </div>
+        ))}
             <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage spaces and samples</p>
+          </div> */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {getBreadcrumbText()}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
+              {parentStack.length > 0
+                ? "Manage spaces and samples in this location"
+                : "Manage your storage spaces and samples"}
+            </p>
+            {parentStack.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Path: {parentStack.map((item) => item.name).join(" > ")}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -11249,12 +12825,6 @@ const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_man
                       </p>
 
                       <div className="relative mb-4">
-                        {/* <button
-                          onClick={() => setMenuOpen(menuOpen === space.uid ? null : space.uid)}
-                          className="p-2 hover:bg-muted rounded-full transition"
-                        >
-                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                        </button> */}
                         {menuOpen === space.uid && (
                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
                             <button
@@ -11333,12 +12903,6 @@ const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sample_man
                       </p>
 
                       <div className="relative mb-4">
-                        {/* <button
-                          onClick={() => setSampleMenuOpen(sampleMenuOpen === sample.uid ? null : sample.uid)}
-                          className="p-2 hover:bg-muted rounded-full transition"
-                        >
-                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                        </button> */}
                         {sampleMenuOpen === sample.uid && (
                           <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
                             <button
