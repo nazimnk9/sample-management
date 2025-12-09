@@ -310,9 +310,8 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
 
   return (
     <aside
-      className={`${
-        sidebarOpen ? "w-64" : "w-20"
-      } bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 flex flex-col overflow-y-auto hidden sm:flex max-h-screen sticky top-0`}
+      className={`${sidebarOpen ? "w-64" : "w-20"
+        } bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 flex flex-col overflow-y-auto hidden sm:flex max-h-screen sticky top-0`}
     >
       <div className="h-16 flex-shrink-0 border-b border-sidebar-border"></div>
 
@@ -328,11 +327,10 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
               <Link
                 key={item.id}
                 href={`/${item.id}`}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive(item.id)
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive(item.id)
                     ? "bg-sidebar-primary text-sidebar-primary-foreground"
                     : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
@@ -346,11 +344,10 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
       <div className="border-t border-sidebar-border p-4 mt-auto">
         <Link
           href="/admin-settings"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-            isActive("admin-settings")
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive("admin-settings")
               ? "bg-sidebar-primary text-sidebar-primary-foreground"
               : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
-          }`}
+            }`}
         >
           <Settings className="w-5 h-5 flex-shrink-0" />
           {sidebarOpen && <span className="text-sm font-medium">Admin Settings</span>}

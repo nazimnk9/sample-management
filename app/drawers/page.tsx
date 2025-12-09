@@ -1,5 +1,5 @@
 import DrawersPage from "@/components/pages/drawers"
 
-export default function DrawersPageRoute() {
+export default function Page() {
   return <DrawersPage />
 }
