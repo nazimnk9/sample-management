@@ -3,34 +3,66 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Edit } from "lucide-react"
 import { apiCall, getCurrentUserRole, canAccessFeature } from "@/lib/auth-utils"
 import { useToast } from "@/hooks/use-toast"
+import EditStaffUserModal from "@/components/modals/edit-staff-user-modal"
 
-interface User {
+interface Company {
+  id: number
+  name: string
+  // Add other fields if needed for display, but name is primary
+}
+
+interface UserDetails {
+  id: number
+  role: string
+  company: Company | null
+  email: string
+  first_name: string
+  last_name: string
+  phone: string | null
+  profile_picture: string | null
+  status: string
+  gender: string
+}
+
+interface StaffUserResult {
   id: number
   uid: string
+  user: UserDetails
   role: string
   is_active: boolean
   status: string
   created_at: string
-  company: number
-  user: number
+  company: number // The ID reference
   created_by: number
-  user_data?: {
-    email: string
-    first_name: string
-    last_name: string
-    phone: string | null
-  }
 }
 
 export default function StaffUserPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<StaffUserResult[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedUserUid, setSelectedUserUid] = useState<string | null>(null)
+
+  const fetchUsers = async () => {
+    try {
+      const response = await apiCall("/organizations/users/")
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.results || [])
+      } else {
+        throw new Error("Failed to fetch users")
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error)
+    }
+  }
 
   useEffect(() => {
     const checkAccessAndFetchUsers = async () => {
@@ -50,21 +82,9 @@ export default function StaffUserPage() {
       }
 
       // Fetch users
+      setIsLoading(true)
       try {
-        const response = await apiCall("/organizations/users/")
-        if (response.ok) {
-          const data = await response.json()
-          setUsers(data.results || [])
-        } else if (response.status === 401) {
-          toast({
-            title: "Unauthorized",
-            description: "Please login to access this page.",
-            variant: "destructive",
-          })
-          router.push("/login")
-        } else {
-          throw new Error("Failed to fetch users")
-        }
+        await fetchUsers()
       } catch (error) {
         console.error("Error fetching users:", error)
         toast({
@@ -106,6 +126,15 @@ export default function StaffUserPage() {
     }
   }
 
+  const handleEdit = (uid: string) => {
+    setSelectedUserUid(uid)
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    fetchUsers() // Refresh list
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -137,34 +166,48 @@ export default function StaffUserPage() {
             <table className="w-full">
               <thead className="bg-muted border-b border-border">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Role</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Phone</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Company</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Role</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Created</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {users.length > 0 ? (
-                  users.map((user) => (
-                    <tr key={user.id} className="hover:bg-muted/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-foreground">{user.role}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{user.company}</td>
+                  users.map((item) => (
+                    <tr key={item.id} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">
+                        {item.user.first_name} {item.user.last_name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{item.user.email}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{item.user.phone || "-"}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {item.user.company?.name || "-"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-foreground">
+                        {item.role}
+                      </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                            user.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                          }`}
+                          className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${item.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}
                         >
-                          {user.status}
+                          {item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 flex items-center gap-2">
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleEdit(item.uid)}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                          title="Edit user"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete user"
                         >
@@ -175,7 +218,7 @@ export default function StaffUserPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                       No users found
                     </td>
                   </tr>
@@ -185,6 +228,13 @@ export default function StaffUserPage() {
           </div>
         </div>
       </div>
+
+      <EditStaffUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        userUid={selectedUserUid}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   )
 }

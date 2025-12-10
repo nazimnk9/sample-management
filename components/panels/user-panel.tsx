@@ -70,7 +70,10 @@ export default function UserPanel() {
 
       {/* Menu Items */}
       <div className="p-2">
-        <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted rounded-lg transition-colors text-foreground text-sm">
+        <button
+          onClick={() => router.push("/profile")}
+          className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted rounded-lg transition-colors text-foreground text-sm"
+        >
           <User className="w-4 h-4" />
           Profile
         </button>

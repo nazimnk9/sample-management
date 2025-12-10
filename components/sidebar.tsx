@@ -302,11 +302,15 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
     { id: "drawers", label: "Drawers", icon: Archive, feature: "drawer_list" },
     { id: "analytics", label: "Analytics", icon: BarChart3, feature: "analytics_list" },
     { id: "notes", label: "Notes", icon: FileText, feature: "notes_list" },
-    { id: "adminUser", label: "Users", icon: Users, feature: "admin_user_list" },
-    { id: "staffUser", label: "Staff", icon: Users, feature: "staff_user_list" },
   ]
 
   const isActive = (id: string) => pathname === `/${id}`
+
+  const getAdminSettingsLink = () => {
+    if (userRole === "SUPER_ADMIN") return "/adminUser"
+    if (userRole === "ADMINISTRATOR") return "/staffUser"
+    return "/admin-settings"
+  }
 
   return (
     <aside
@@ -328,8 +332,8 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
                 key={item.id}
                 href={`/${item.id}`}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive(item.id)
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                  : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
                   }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
@@ -343,10 +347,10 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
       {/* Bottom Settings */}
       <div className="border-t border-sidebar-border p-4 mt-auto">
         <Link
-          href="/admin-settings"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive("admin-settings")
-              ? "bg-sidebar-primary text-sidebar-primary-foreground"
-              : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
+          href={getAdminSettingsLink()}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive("admin-settings") || isActive("adminUser") || isActive("staffUser")
+            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+            : "hover:bg-sidebar-accent/20 text-sidebar-foreground"
             }`}
         >
           <Settings className="w-5 h-5 flex-shrink-0" />

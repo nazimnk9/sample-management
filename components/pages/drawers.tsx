@@ -127,13 +127,34 @@ export default function DrawersPage() {
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: boolean }>({})
 
 
+  // useEffect(() => {
+  //   // If URL has parent_uid, respect it (initial load)
+  //   if (queryParentUid && parentStack.length === 0) {
+  //     // We might want to fetch parent details to fill stack correctly, but simple approach:
+  //     // We'll trust the currentParentUid state. 
+  //   }
+  // }, [queryParentUid])
+
   useEffect(() => {
-    // If URL has parent_uid, respect it (initial load)
-    if (queryParentUid && parentStack.length === 0) {
-      // We might want to fetch parent details to fill stack correctly, but simple approach:
-      // We'll trust the currentParentUid state. 
-    }
-  }, [queryParentUid])
+      const buildParentStack = async () => {
+        if (queryParentUid && parentStack.length === 1) {
+          try {
+            // Fetch the current space details to build the parent stack
+            const response = await apiCall(`/sample_manager/storage/${queryParentUid}`)
+            if (response.ok) {
+              const drawerData = await response.json()
+              // For simplicity, just add this space to the stack
+              // In a real implementation, you'd want to fetch the full hierarchy
+              setParentStack([{ uid: drawerData.uid, name: drawerData.name }])
+            }
+          } catch (err) {
+            console.error("Error building parent stack:", err)
+          }
+        }
+      }
+  
+      buildParentStack()
+    }, [queryParentUid, parentStack.length])
 
   useEffect(() => {
     fetchDrawersAndFiles()
@@ -206,6 +227,8 @@ export default function DrawersPage() {
   const handleDrawerClick = (drawer: Drawer) => {
     setParentStack([...parentStack, { uid: drawer.uid, name: drawer.name }])
     setCurrentParentUid(drawer.uid)
+    const newUrl = `/drawers?currentParentUid=${drawer.uid}`
+    router.push(newUrl)
   }
 
   const handleBackClick = () => {
@@ -213,6 +236,7 @@ export default function DrawersPage() {
       const newStack = parentStack.slice(0, -1)
       setParentStack(newStack)
       setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+      setFiles([])
     } else {
       setCurrentParentUid(null)
     }
@@ -222,11 +246,13 @@ export default function DrawersPage() {
     const newStack = parentStack.slice(0, index + 1)
     setParentStack(newStack)
     setCurrentParentUid(newStack[newStack.length - 1].uid)
+    setFiles([])
   }
 
   const handleRootClick = () => {
     setParentStack([])
     setCurrentParentUid(null)
+    setFiles([])
   }
 
   // --- Drawer Actions ---

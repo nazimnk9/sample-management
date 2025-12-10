@@ -156,12 +156,19 @@ export async function apiCall(endpoint: string, options: RequestInit = {}): Prom
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL
   const url = `${baseURL}${endpoint}`
 
+  const headers = {
+    ...getAuthHeaders(),
+    ...options.headers,
+  }
+
+  if (options.body instanceof FormData) {
+    // Let the browser set the Content-Type with boundary for FormData
+    delete (headers as any)["Content-Type"]
+  }
+
   return fetch(url, {
     ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
+    headers,
   })
 }
 
