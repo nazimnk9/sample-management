@@ -12420,6 +12420,8 @@ export default function SpacePage() {
     const [centimeterRange, setCentimeterRange] = useState<[number, number]>([0, 100])
     const [selectedColor, setSelectedColor] = useState<string>("")
     const [sampleType, setSampleType] = useState<string>("")
+    const [category, setCategory] = useState<string>("")
+    const [subCategory, setSubCategory] = useState<string>("")
     const [selectedBuyer, setSelectedBuyer] = useState<string>("")
     const [selectedProject, setSelectedProject] = useState<string>("")
     const [ordering, setOrdering] = useState<string>("")
@@ -12806,6 +12808,8 @@ export default function SpacePage() {
 
     const FILTER_COLORS = ["AOP", "ARMY", "AVIO", "BLACK", "BLUE", "BROWN", "CAMEL", "CHARCOAL", "CREAM", "DENIM", "GOLD", "GREY", "GREEN", "KHAKI", "MULTI", "NAVY", "OFF WHITE", "OLIVE", "ORANGE", "PINK", "PURPLE", "RED", "ROSE", "RUST", "SILVER", "STONE", "TAN", "TAUPE", "TEAL", "WHITE", "YELLOW"]
     const FILTER_TYPES = ["DEVELOPMENT", "SALESMAN", "STYLING", "TOP OF PRODUCTION", "PRE-PRODUCTION", "SMS", "VINTAGE"]
+    const FILTER_CATEGORIES = ["CIRCULAR_KNIT", "FLAT_KNIT", "WOVEN"]
+    const FILTER_SUB_CATEGORIES = ["MENS", "JR_LADIES", "WOMEN", "JUNIOR_BOYS", "SENIOR_BOYS", "TODDLER_BOYS", "JUNIOR_GIRLS", "SENIOR_GIRLS", "TODDLER_GIRLS", "KIDS"]
     const LETTER_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
 
     // Sort options as per user request
@@ -12836,6 +12840,8 @@ export default function SpacePage() {
 
             if (selectedColor && selectedColor !== "all") params.append("color", selectedColor)
             if (sampleType && sampleType !== "all") params.append("types", sampleType)
+            if (category && category !== "all") params.append("category", category)
+            if (subCategory && subCategory !== "all") params.append("sub_category", subCategory)
             if (selectedBuyer && selectedBuyer !== "all") params.append("buyer", selectedBuyer)
             if (selectedProject && selectedProject !== "all") params.append("project", selectedProject)
             if (ordering) params.append("ordering", ordering)
@@ -13219,6 +13225,56 @@ export default function SpacePage() {
                                                 onClick={(e) => {
                                                     e.stopPropagation()
                                                     setSelectedProject("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Category Filter */}
+                                <div className="space-y-3">
+                                    <Label>Category</Label>
+                                    <div className="relative">
+                                        <Select value={category} onValueChange={setCategory}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Categories</SelectItem>
+                                                {FILTER_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {category && category !== "all" && (
+                                            <X
+                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setCategory("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Sub Category Filter */}
+                                <div className="space-y-3">
+                                    <Label>Sub Category</Label>
+                                    <div className="relative">
+                                        <Select value={subCategory} onValueChange={setSubCategory}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select sub category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Sub Categories</SelectItem>
+                                                {FILTER_SUB_CATEGORIES.map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {subCategory && subCategory !== "all" && (
+                                            <X
+                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSubCategory("all")
                                                 }}
                                             />
                                         )}
