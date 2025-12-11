@@ -12064,7 +12064,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Trash2, CreditCard as Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical, Upload, RectangleHorizontal, Search } from "lucide-react"
@@ -12079,7 +12079,27 @@ import {
     DropdownMenuContent,
     DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Filter } from "lucide-react"
+import { Slider } from "@/components/ui/slider"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetFooter,
+    SheetClose,
+} from "@/components/ui/sheet"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface Space {
     id: number
@@ -12358,6 +12378,21 @@ export default function SpacePage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState<{ spaces: Space[]; samples: Sample[] }>({ spaces: [], samples: [] })
     const [isSearchLoading, setIsSearchLoading] = useState(false)
+    const [showSearchDropdown, setShowSearchDropdown] = useState(false)
+    const searchContainerRef = useRef<HTMLDivElement>(null)
+
+    // Handle click outside to close search dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+                setShowSearchDropdown(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
 
     // Edit form
     const [editFormData, setEditFormData] = useState({ name: "", description: "" })
@@ -12377,6 +12412,18 @@ export default function SpacePage() {
     const [buyers, setBuyers] = useState<Buyer[]>([])
     const [projects, setProjects] = useState<Project[]>([])
     const [notes, setNotes] = useState<Note[]>([])
+
+    // Filter State
+    const [weightRange, setWeightRange] = useState<[number, number]>([0, 1000])
+    const [sizeType, setSizeType] = useState<'letter' | 'centimeter' | null>(null)
+    const [letterSize, setLetterSize] = useState<string>("")
+    const [centimeterRange, setCentimeterRange] = useState<[number, number]>([0, 100])
+    const [selectedColor, setSelectedColor] = useState<string>("")
+    const [sampleType, setSampleType] = useState<string>("")
+    const [selectedBuyer, setSelectedBuyer] = useState<string>("")
+    const [selectedProject, setSelectedProject] = useState<string>("")
+    const [ordering, setOrdering] = useState<string>("")
+    const [filterSheetOpen, setFilterSheetOpen] = useState(false)
 
     // Build parent stack when currentParentUid is set from URL
     useEffect(() => {
@@ -12757,9 +12804,94 @@ export default function SpacePage() {
         }
     }
 
+    const FILTER_COLORS = ["AOP", "ARMY", "AVIO", "BLACK", "BLUE", "BROWN", "CAMEL", "CHARCOAL", "CREAM", "DENIM", "GOLD", "GREY", "GREEN", "KHAKI", "MULTI", "NAVY", "OFF WHITE", "OLIVE", "ORANGE", "PINK", "PURPLE", "RED", "ROSE", "RUST", "SILVER", "STONE", "TAN", "TAUPE", "TEAL", "WHITE", "YELLOW"]
+    const FILTER_TYPES = ["DEVELOPMENT", "SALESMAN", "STYLING", "TOP OF PRODUCTION", "PRE-PRODUCTION", "SMS", "VINTAGE"]
+    const LETTER_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
+
+    // Sort options as per user request
+    const SORT_OPTIONS = [
+        { label: "Color for ASC", value: "color" },
+        { label: "Color for DSC", value: "-color" },
+        { label: "Arrival Date for ASC", value: "arrival_date" },
+        { label: "Arrival Date for DSC", value: "-arrival_date" },
+        { label: "Name for ASC", value: "name" },
+        { label: "Name for DSC", value: "-name" },
+    ]
+
+    const handleFilterSearch = async () => {
+        setIsLoading(true)
+        try {
+            const params = new URLSearchParams()
+            // Always constrain by weight if modified from defaults (or just send them)
+            // User requirement: "Two-Point Range Slider... weight_min, weight_max parameters"
+            params.append("weight_min", weightRange[0].toString())
+            params.append("weight_max", weightRange[1].toString())
+
+            if (sizeType === 'letter' && letterSize) {
+                params.append("size", letterSize)
+            } else if (sizeType === 'centimeter') {
+                params.append("size_cen_min", centimeterRange[0].toString())
+                params.append("size_cen_max", centimeterRange[1].toString())
+            }
+
+            if (selectedColor && selectedColor !== "all") params.append("color", selectedColor)
+            if (sampleType && sampleType !== "all") params.append("types", sampleType)
+            if (selectedBuyer && selectedBuyer !== "all") params.append("buyer", selectedBuyer)
+            if (selectedProject && selectedProject !== "all") params.append("project", selectedProject)
+            if (ordering) params.append("ordering", ordering)
+
+            const response = await apiCall(`/sample_manager/sample/?${params.toString()}`)
+            if (response.ok) {
+                const data = await response.json()
+                setSamples(Array.isArray(data) ? data : data.results || [])
+            }
+        } catch (error) {
+            console.error("Filter search error:", error)
+            toast({ title: "Error", description: "Failed to filter samples", variant: "destructive" })
+        } finally {
+            setIsLoading(false)
+            setFilterSheetOpen(false)
+        }
+    }
+
+    // Trigger search when ordering changes
+    useEffect(() => {
+        if (ordering) {
+            handleFilterSearch()
+        }
+    }, [ordering])
+
     const getBreadcrumbText = () => {
         if (parentStack.length === 0) return "Storage Spaces"
         return parentStack.map((item) => item.name).join(" / ")
+    }
+
+    const handleSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            setShowSearchDropdown(false)
+            setIsLoading(true)
+            try {
+                const [spacesRes, samplesRes] = await Promise.all([
+                    apiCall(`/sample_manager/storage/?type=SPACE&search=${searchQuery}`),
+                    apiCall(`/sample_manager/sample/?search=${searchQuery}`)
+                ])
+
+                if (spacesRes.ok) {
+                    const spacesData = await spacesRes.json()
+                    setSpaces(Array.isArray(spacesData) ? spacesData : spacesData.results || [])
+                }
+
+                if (samplesRes.ok) {
+                    const samplesData = await samplesRes.json()
+                    setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+                }
+            } catch (error) {
+                console.error("Search on Enter error:", error)
+                toast({ title: "Error", description: "Failed to fetch search results", variant: "destructive" })
+            } finally {
+                setIsLoading(false)
+            }
+        }
     }
 
     return (
@@ -12817,82 +12949,318 @@ export default function SpacePage() {
                 </div>
 
                 {/* Global Search Option */}
-                <div className="relative w-full max-w-sm ml-auto mr-4 hidden sm:block">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                        placeholder="Search spaces & samples..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    />
+                {/* Global Search & Filter */}
+                <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
+                    <div className="relative w-[600px] max-w-sm" ref={searchContainerRef}>
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <input
+                            placeholder="Search spaces & samples..."
+                            value={searchQuery}
+                            onKeyDown={handleSearchKeyDown}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value)
+                                if (e.target.value) setShowSearchDropdown(true)
+                            }}
+                            onFocus={() => {
+                                if (searchQuery) setShowSearchDropdown(true)
+                            }}
+                            className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        />
 
-                    {/* Search Filter List Dropdown */}
-                    {searchQuery && (
-                        <div className="absolute top-10 right-0 w-full z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
-                            {isSearchLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                                </div>
-                            ) : (
-                                <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
-                                    {/* Left Side: Spaces */}
-                                    <div className="flex-1 p-4">
-                                        <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Spaces</h3>
-                                        <div className="space-y-1">
-                                            {searchResults.spaces.map((space) => (
-                                                <div
-                                                    key={space.uid}
-                                                    onClick={() => {
-                                                        handleSpaceCardClick(space)
-                                                        setSearchQuery("")
-                                                    }}
-                                                    className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
-                                                >
-                                                    <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
-                                                    <span className="text-sm font-medium line-clamp-1">{space.name}</span>
-                                                </div>
-                                            ))}
-                                            {searchResults.spaces.length === 0 && (
-                                                <p className="text-xs text-muted-foreground">No spaces found</p>
-                                            )}
+                        {/* Search Filter List Dropdown */}
+                        {showSearchDropdown && searchQuery && (
+                            <div className="absolute top-10 right-0 w-full z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
+                                {isSearchLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
+                                        {/* Left Side: Spaces */}
+                                        <div className="flex-1 p-4">
+                                            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Spaces</h3>
+                                            <div className="space-y-1">
+                                                {searchResults.spaces.map((space) => (
+                                                    <div
+                                                        key={space.uid}
+                                                        onClick={() => {
+                                                            handleSpaceCardClick(space)
+                                                            setSearchQuery("")
+                                                        }}
+                                                        className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
+                                                    >
+                                                        <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
+                                                        <span className="text-sm font-medium line-clamp-1">{space.name}</span>
+                                                    </div>
+                                                ))}
+                                                {searchResults.spaces.length === 0 && (
+                                                    <p className="text-xs text-muted-foreground">No spaces found</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Right Side: Samples */}
+                                        <div className="flex-1 p-4 bg-muted/10">
+                                            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Samples</h3>
+                                            <div className="space-y-2">
+                                                {searchResults.samples.map((sample) => (
+                                                    <div
+                                                        key={sample.uid}
+                                                        onClick={() => handleSearchSampleClick(sample)}
+                                                        className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
+                                                    >
+                                                        <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
+                                                            {sample.image ? (
+                                                                <img
+                                                                    src={sample.image}
+                                                                    alt={sample.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium">{sample.name}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {searchResults.samples.length === 0 && (
+                                                    <p className="text-xs text-muted-foreground">No samples found</p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                                    {/* Right Side: Samples */}
-                                    <div className="flex-1 p-4 bg-muted/10">
-                                        <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Samples</h3>
-                                        <div className="space-y-2">
-                                            {searchResults.samples.map((sample) => (
-                                                <div
-                                                    key={sample.uid}
-                                                    onClick={() => handleSearchSampleClick(sample)}
-                                                    className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
-                                                >
-                                                    <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
-                                                        {sample.image ? (
-                                                            <img
-                                                                src={sample.image}
-                                                                alt={sample.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium">{sample.name}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {searchResults.samples.length === 0 && (
-                                                <p className="text-xs text-muted-foreground">No samples found</p>
-                                            )}
+                    <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                                <Filter className="h-4 w-4" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                            <SheetHeader>
+                                <SheetTitle>Filter Samples</SheetTitle>
+                                <SheetDescription>
+                                    Apply filters to narrow down the sample list.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-6 px-6 space-y-6">
+                                {/* Weight Filter */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label>Weight Range</Label>
+                                        <span className="text-xs text-muted-foreground">{weightRange[0]} - {weightRange[1]}</span>
+                                    </div>
+                                    <Slider
+                                        value={weightRange}
+                                        min={0}
+                                        max={2000}
+                                        step={10}
+                                        onValueChange={(val: any) => setWeightRange(val)}
+                                        className="py-2"
+                                    />
+                                </div>
+
+                                {/* Size Filter */}
+                                <div className="space-y-3">
+                                    <Label className="block">Size Type</Label>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="size-letter"
+                                                checked={sizeType === 'letter'}
+                                                onCheckedChange={() => setSizeType(sizeType === 'letter' ? null : 'letter')}
+                                            />
+                                            <Label htmlFor="size-letter" className="cursor-pointer">Letter Size</Label>
                                         </div>
+                                        {sizeType === 'letter' && (
+                                            <div className="relative">
+                                                <Select value={letterSize} onValueChange={setLetterSize}>
+                                                    <SelectTrigger className="w-full mt-1 pr-8">
+                                                        <SelectValue placeholder="Select size" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {LETTER_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                {letterSize && (
+                                                    <X
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            setLetterSize("")
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center space-x-2 mt-2">
+                                            <Checkbox
+                                                id="size-cen"
+                                                checked={sizeType === 'centimeter'}
+                                                onCheckedChange={() => setSizeType(sizeType === 'centimeter' ? null : 'centimeter')}
+                                            />
+                                            <Label htmlFor="size-cen" className="cursor-pointer">Centimeter Size</Label>
+                                        </div>
+                                        {sizeType === 'centimeter' && (
+                                            <div className="pt-2 pl-6">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <Label className="text-xs text-muted-foreground">Range ({centimeterRange[0]} - {centimeterRange[1]})</Label>
+                                                </div>
+                                                <Slider
+                                                    value={centimeterRange}
+                                                    min={0}
+                                                    max={200}
+                                                    step={1}
+                                                    onValueChange={(val: any) => setCentimeterRange(val)}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    )}
+
+                                {/* Color Filter */}
+                                <div className="space-y-3">
+                                    <Label>Color</Label>
+                                    <div className="relative">
+                                        <Select value={selectedColor} onValueChange={setSelectedColor}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select color" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Colors</SelectItem>
+                                                {FILTER_COLORS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {selectedColor && selectedColor !== "all" && (
+                                            <X
+                                                className="absolute left-29 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedColor("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Sample Type Filter */}
+                                <div className="space-y-3">
+                                    <Label>Sample Type</Label>
+                                    <div className="relative">
+                                        <Select value={sampleType} onValueChange={setSampleType}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Types</SelectItem>
+                                                {FILTER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {sampleType && sampleType !== "all" && (
+                                            <X
+                                                className="absolute left-46 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSampleType("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Buyer Filter */}
+                                <div className="space-y-3">
+                                    <Label>Buyer</Label>
+                                    <div className="relative">
+                                        <Select value={selectedBuyer} onValueChange={setSelectedBuyer}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select buyer" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Buyers</SelectItem>
+                                                {buyers.map(b => <SelectItem key={b.uid} value={b.uid}>{b.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {selectedBuyer && selectedBuyer !== "all" && (
+                                            <X
+                                                className="absolute left-27 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedBuyer("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Project Filter */}
+                                <div className="space-y-3">
+                                    <Label>Project</Label>
+                                    <div className="relative">
+                                        <Select value={selectedProject} onValueChange={setSelectedProject}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select project" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Projects</SelectItem>
+                                                {projects.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {selectedProject && selectedProject !== "all" && (
+                                            <X
+                                                className="absolute left-32 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedProject("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <SheetFooter className="gap-2">
+                                <Button className="flex-1" onClick={handleFilterSearch} disabled={isLoading}>
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
+                                </Button>
+                                <SheetClose asChild>
+                                    <Button variant="outline" className="flex-1">Close</Button>
+                                </SheetClose>
+                            </SheetFooter>
+                        </SheetContent>
+                    </Sheet>
+
+                    {/* Sort By Dropdown */}
+                    {/* Sort By Dropdown */}
+                    <div className="relative">
+                        <Select value={ordering} onValueChange={setOrdering}>
+                            <SelectTrigger className="w-[180px] pr-8">
+                                <SelectValue placeholder="Sort By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {SORT_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {ordering && (
+                            <X
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setOrdering("")
+                                }}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
 

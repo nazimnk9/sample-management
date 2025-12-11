@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Edit2, FolderOpen, FileText, ChevronLeft, X, Loader2, MoreVertical, ChevronDown, Upload } from "lucide-react"
+import { Plus, Trash2, Edit2, Archive, FileText, ChevronLeft, X, Loader2, MoreVertical, ChevronDown, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getCookie, apiCall } from "@/lib/auth-utils"
 import Link from "next/link"
@@ -136,25 +136,25 @@ export default function DrawersPage() {
   // }, [queryParentUid])
 
   useEffect(() => {
-      const buildParentStack = async () => {
-        if (queryParentUid && parentStack.length === 1) {
-          try {
-            // Fetch the current space details to build the parent stack
-            const response = await apiCall(`/sample_manager/storage/${queryParentUid}`)
-            if (response.ok) {
-              const drawerData = await response.json()
-              // For simplicity, just add this space to the stack
-              // In a real implementation, you'd want to fetch the full hierarchy
-              setParentStack([{ uid: drawerData.uid, name: drawerData.name }])
-            }
-          } catch (err) {
-            console.error("Error building parent stack:", err)
+    const buildParentStack = async () => {
+      if (queryParentUid && parentStack.length === 1) {
+        try {
+          // Fetch the current space details to build the parent stack
+          const response = await apiCall(`/sample_manager/storage/${queryParentUid}`)
+          if (response.ok) {
+            const drawerData = await response.json()
+            // For simplicity, just add this space to the stack
+            // In a real implementation, you'd want to fetch the full hierarchy
+            setParentStack([{ uid: drawerData.uid, name: drawerData.name }])
           }
+        } catch (err) {
+          console.error("Error building parent stack:", err)
         }
       }
-  
-      buildParentStack()
-    }, [queryParentUid, parentStack.length])
+    }
+
+    buildParentStack()
+  }, [queryParentUid, parentStack.length])
 
   useEffect(() => {
     fetchDrawersAndFiles()
@@ -651,11 +651,11 @@ export default function DrawersPage() {
                         <img src={drawer.image} alt={drawer.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
-                          <FolderOpen className="w-12 h-12 text-muted-foreground" />
+                          <Archive className="w-12 h-12 text-muted-foreground" />
                         </div>
                       )}
                       <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
-                        <FolderOpen className="w-5 h-5 text-white" />
+                        <Archive className="w-5 h-5 text-white" />
                       </div>
                     </div>
 
@@ -766,7 +766,7 @@ export default function DrawersPage() {
 
           {drawers.length === 0 && files.length === 0 && (
             <div className="text-center py-12">
-              <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No drawers or files found</p>
             </div>
           )}
@@ -877,8 +877,8 @@ export default function DrawersPage() {
                           <button
                             type="button"
                             className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${fieldErrors.buyer_uids
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-border focus:ring-primary"
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-border focus:ring-primary"
                               }`}
                           >
                             <span
@@ -917,8 +917,8 @@ export default function DrawersPage() {
                           <button
                             type="button"
                             className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${fieldErrors.project_uids
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-border focus:ring-primary"
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-border focus:ring-primary"
                               }`}
                           >
                             <span
@@ -957,8 +957,8 @@ export default function DrawersPage() {
                           <button
                             type="button"
                             className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${fieldErrors.note_uids
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-border focus:ring-primary"
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-border focus:ring-primary"
                               }`}
                           >
                             <span className={fileFormData.note_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}>
