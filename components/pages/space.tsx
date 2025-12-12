@@ -59,6 +59,11 @@ interface Sample {
     description: string
     image: string | null
     storage_uid: string
+    storage?: {
+        uid: string
+        name: string
+        type: string
+    }
     images?: Array<{ id: number; uid: string; file: string }>
 }
 
@@ -625,12 +630,27 @@ export default function SpacePage() {
     const handleSampleEditClick = async (sample: Sample) => {
         setSelectedSample(sample)
         setSampleEditLoading(true)
+
+        // Determine the correct storage UID:
+        // 1. sample.storage.uid (from filter API)
+        // 2. sample.storage_uid (flat field)
+        // 3. currentParentUid (context)
+        const storageUid = sample.storage?.uid || sample.storage_uid || currentParentUid
+
+        if (!storageUid) {
+            toast({ title: "Error", description: "Could not determine storage location for this sample", variant: "destructive" })
+            setSampleEditLoading(false)
+            return
+        }
+
         try {
-            const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${sample.uid}`)
+            const response = await apiCall(`/sample_manager/sample/${storageUid}/${sample.uid}`)
             if (response.ok) {
                 const data = await response.json()
                 setSampleEditData(data)
                 setSampleEditImages(data.images || [])
+            } else {
+                throw new Error("Failed to load")
             }
         } catch (err) {
             toast({ title: "Error", description: "Failed to load sample details", variant: "destructive" })
@@ -642,7 +662,14 @@ export default function SpacePage() {
     }
 
     const handleSampleSaveEdit = async () => {
-        if (!selectedSample || !currentParentUid || !sampleEditData) return
+        if (!selectedSample || !sampleEditData) return
+
+        const storageUid = selectedSample.storage?.uid || selectedSample.storage_uid || currentParentUid
+        if (!storageUid) {
+            toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
+            return
+        }
+
         setSampleIsSaving(true)
 
         try {
@@ -665,10 +692,10 @@ export default function SpacePage() {
                 buyer_uids: sampleEditData.buyers?.map((b: any) => b.uid) || [],
                 project_uids: sampleEditData.projects?.map((p: any) => p.uid) || [],
                 note_uids: sampleEditData.notes?.map((n: any) => n.uid) || [],
-                storage_uid: currentParentUid,
+                storage_uid: storageUid,
             }
 
-            const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+            const response = await apiCall(`/sample_manager/sample/${storageUid}/${selectedSample.uid}`, {
                 method: "PUT",
                 body: JSON.stringify(submitData),
             })
@@ -679,7 +706,20 @@ export default function SpacePage() {
 
             toast({ title: "Success", description: "Sample updated successfully" })
             setSampleEditModal(false)
-            fetchSpacesAndSamples()
+
+            // Refresh logic: if filtered/search is active, refresh that; otherwise refresh current space
+            if (isFiltered || searchQuery) {
+                if (isFiltered) {
+                    handleFilterSearch()
+                } else if (searchQuery) {
+                    // Re-trigger search
+                    const event = { key: "Enter" } as React.KeyboardEvent<HTMLInputElement>
+                    handleSearchKeyDown(event)
+                }
+            } else {
+                fetchSpacesAndSamples()
+            }
+
         } catch (err) {
             toast({ title: "Error", description: "Failed to update sample", variant: "destructive" })
         } finally {
@@ -694,11 +734,18 @@ export default function SpacePage() {
     }
 
     const handleSampleConfirmDelete = async () => {
-        if (!selectedSample || !currentParentUid) return
+        if (!selectedSample) return
+
+        const storageUid = selectedSample.storage?.uid || selectedSample.storage_uid || currentParentUid
+        if (!storageUid) {
+            toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
+            return
+        }
+
         setSampleIsDeleting(true)
 
         try {
-            const response = await apiCall(`/sample_manager/sample/${currentParentUid}/${selectedSample.uid}`, {
+            const response = await apiCall(`/sample_manager/sample/${storageUid}/${selectedSample.uid}`, {
                 method: "DELETE",
             })
 
@@ -708,7 +755,33 @@ export default function SpacePage() {
 
             toast({ title: "Success", description: "Sample deleted successfully" })
             setSampleDeleteConfirmModal(false)
-            fetchSpacesAndSamples()
+
+            // Refresh logic
+            if (isFiltered || searchQuery) {
+                if (isFiltered) {
+                    handleFilterSearch()
+                } else if (searchQuery) {
+                    // Re-trigger search manually for now
+                    // Ideally we extract search logic to a reusable function
+                    // For now triggering via enter key simulation is tricky, let's copy the logic or ensure effect triggers
+                    // Actually simpler: 
+                    const [spacesRes, samplesRes] = await Promise.all([
+                        apiCall(`/sample_manager/storage/?type=SPACE&search=${searchQuery}`),
+                        apiCall(`/sample_manager/sample/?search=${searchQuery}`)
+                    ])
+                    if (samplesRes.ok) {
+                        const samplesData = await samplesRes.json()
+                        setSearchResults(prev => ({
+                            ...prev,
+                            samples: Array.isArray(samplesData) ? samplesData : samplesData.results || []
+                        }))
+                        // Also update main samples list if we are showing search results
+                        setSamples(Array.isArray(samplesData) ? samplesData : samplesData.results || [])
+                    }
+                }
+            } else {
+                fetchSpacesAndSamples()
+            }
         } catch (err) {
             toast({ title: "Error", description: "Failed to delete sample", variant: "destructive" })
         } finally {
