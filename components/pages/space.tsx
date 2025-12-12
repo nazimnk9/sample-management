@@ -683,6 +683,8 @@ export default function SpacePage() {
                 weight_type: sampleEditData.weight_type,
                 size_type: sampleEditData.size_type,
                 types: sampleEditData.types,
+                category: sampleEditData.category,
+                sub_category: sampleEditData.sub_category,
                 color: sampleEditData.color,
                 size: sampleEditData.size,
                 comments: sampleEditData.comments,
@@ -1038,7 +1040,7 @@ export default function SpacePage() {
                                                                 <img
                                                                     src={sample.image}
                                                                     alt={sample.name}
-                                                                    className="w-full h-full object-cover"
+                                                                    className="w-full h-full object-fixed"
                                                                 />
                                                             ) : (
                                                                 <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
@@ -1377,7 +1379,7 @@ export default function SpacePage() {
                                                 <img
                                                     src={space.image || "/placeholder.svg"}
                                                     alt={space.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                                    className="w-full h-full object-fixed group-hover:scale-105 transition-transform"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -1458,7 +1460,7 @@ export default function SpacePage() {
                                                 <img
                                                     src={sample.images[0].file || "/placeholder.svg"}
                                                     alt={sample.name}
-                                                    className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                                    className="w-full h-full object-fixed hover:scale-105 transition-transform"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -1575,7 +1577,7 @@ export default function SpacePage() {
                                                 <img
                                                     src={editImagePreview || "/placeholder.svg"}
                                                     alt="Preview"
-                                                    className="w-full h-40 object-cover rounded-lg"
+                                                    className="w-full h-40 object-fixed rounded-lg"
                                                 />
                                                 <button
                                                     type="button"
@@ -1660,64 +1662,176 @@ export default function SpacePage() {
                                             />
                                         </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">Style No</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.style_no}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, style_no: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {/* Style No */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Style No</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.style_no}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, style_no: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">SKU No</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.sku_no}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, sku_no: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                        </div>
+                                            {/* SKU No */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">SKU No</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.sku_no}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, sku_no: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">Item</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.item}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, item: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                        </div>
+                                            {/* Category */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Category</label>
+                                                <select
+                                                    value={sampleEditData.category}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, category: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                >
+                                                    <option value="CIRCULAR_KNIT">CIRCULAR_KNIT</option>
+                                                    <option value="FLAT_KNIT">FLAT_KNIT</option>
+                                                    <option value="WOVEN">WOVEN</option>
+                                                </select>
+                                            </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">Color</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.color}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, color: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                        </div>
+                                            {/* Sub Category */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Sub Category</label>
+                                                <select
+                                                    value={sampleEditData.sub_category}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, sub_category: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                >
+                                                    <option value="MENS">MENS</option>
+                                                    <option value="JR_LADIES">JR_LADIES</option>
+                                                    <option value="WOMEN">WOMEN</option>
+                                                    <option value="JUNIOR_BOYS">JUNIOR_BOYS</option>
+                                                    <option value="SENIOR_BOYS">SENIOR_BOYS</option>
+                                                    <option value="TODDLER_BOYS">TODDLER_BOYS</option>
+                                                    <option value="JUNIOR_GIRLS">JUNIOR_GIRLS</option>
+                                                    <option value="SENIOR_GIRLS">SENIOR_GIRLS</option>
+                                                    <option value="TODDLER_GIRLS">TODDLER_GIRLS</option>
+                                                    <option value="KIDS">KIDS</option>
+                                                </select>
+                                            </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.fabrication}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, fabrication: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                        </div>
+                                            {/* Item */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Item</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.item}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, item: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
-                                            <input
-                                                type="text"
-                                                value={sampleEditData.weight}
-                                                onChange={(e) => setSampleEditData({ ...sampleEditData, weight: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
+                                            {/* Color */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Color</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.color}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, color: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
+
+                                            {/* Size */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Size</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.size}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
+
+                                            {/* Size Type */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Size Type</label>
+                                                <select
+                                                    value={sampleEditData.size_type}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size_type: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                >
+                                                    <option value="CENTIMETER">CENTIMETER</option>
+                                                    <option value="LETTER">LETTER</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Fabrication */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Fabrication</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.fabrication}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, fabrication: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
+
+                                            {/* Weight */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Weight</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.weight}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, weight: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
+
+                                            {/* Weight Type */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Weight Type</label>
+                                                <select
+                                                    value={sampleEditData.weight_type}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, weight_type: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                >
+                                                    <option value="GM">GM</option>
+                                                    <option value="KG">KG</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Sample Type */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Sample Type</label>
+                                                <select
+                                                    value={sampleEditData.types}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, types: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                >
+                                                    <option value="DEVELOPMENT">DEVELOPMENT</option>
+                                                    <option value="SALESMAN">SALESMAN</option>
+                                                    <option value="STYLING">STYLING</option>
+                                                    <option value="SHIPPING">SHIPPING</option>
+                                                    <option value="FIT">FIT</option>
+                                                    <option value="PRODUCTION">PRODUCTION</option>
+                                                    <option value="PRE_PRODUCTION">PRE_PRODUCTION</option>
+                                                    <option value="COUNTER">COUNTER</option>
+                                                    <option value="SIZE_SET">SIZE_SET</option>
+                                                    <option value="ORIGINAL">ORIGINAL</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Arrival Date */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Arrival Date</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    value={sampleEditData.arrival_date ? sampleEditData.arrival_date.slice(0, 16) : ""}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, arrival_date: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
                                         </div>
 
                                         <div>
