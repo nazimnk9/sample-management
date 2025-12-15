@@ -1721,15 +1721,7 @@ export default function SpacePage() {
                                             </div>
 
                                             {/* Item */}
-                                            <div>
-                                                <label className="text-sm font-medium text-foreground block mb-2">Item</label>
-                                                <input
-                                                    type="text"
-                                                    value={sampleEditData.item}
-                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, item: e.target.value })}
-                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                                />
-                                            </div>
+                                            {/* Item - Removed */}
 
                                             {/* Color */}
                                             <div>
@@ -1738,17 +1730,6 @@ export default function SpacePage() {
                                                     type="text"
                                                     value={sampleEditData.color}
                                                     onChange={(e) => setSampleEditData({ ...sampleEditData, color: e.target.value })}
-                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                                />
-                                            </div>
-
-                                            {/* Size */}
-                                            <div>
-                                                <label className="text-sm font-medium text-foreground block mb-2">Size</label>
-                                                <input
-                                                    type="text"
-                                                    value={sampleEditData.size}
-                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 />
                                             </div>
@@ -1764,6 +1745,32 @@ export default function SpacePage() {
                                                     <option value="CENTIMETER">CENTIMETER</option>
                                                     <option value="LETTER">LETTER</option>
                                                 </select>
+                                            </div>
+
+                                            {/* Size */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Size</label>
+                                                {sampleEditData.size_type === "LETTER" ? (
+                                                    <select
+                                                        value={sampleEditData.size}
+                                                        onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
+                                                        className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    >
+                                                        <option value="">Select Size</option>
+                                                        <option value="S">S</option>
+                                                        <option value="M">M</option>
+                                                        <option value="L">L</option>
+                                                        <option value="XL">XL</option>
+                                                        <option value="XXL">XXL</option>
+                                                    </select>
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        value={sampleEditData.size}
+                                                        onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
+                                                        className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    />
+                                                )}
                                             </div>
 
                                             {/* Fabrication */}

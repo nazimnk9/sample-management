@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Trash2, Edit2, Archive, FileText, ChevronLeft, X, Loader2, MoreVertical, ChevronDown, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -107,6 +107,9 @@ export default function DrawersPage() {
 
   const [selectedDrawer, setSelectedDrawer] = useState<Drawer | null>(null)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
+  const [fileDetailsModal, setFileDetailsModal] = useState(false)
+  const [fileDetails, setFileDetails] = useState<any>(null)
+  const [fileDetailsLoading, setFileDetailsLoading] = useState(false)
 
   // Drawer Edit Form
   const [drawerFormData, setDrawerFormData] = useState({ name: "", description: "" })
@@ -435,6 +438,24 @@ export default function DrawersPage() {
     }
   }
 
+  const handleFileDetailsClick = async (file: FileItem) => {
+    setFileDetailsLoading(true)
+    try {
+      const response = await apiCall(`/sample_manager/storage_file/${currentParentUid}/${file.uid}`)
+      if (response.ok) {
+        const data = await response.json()
+        setFileDetails(data)
+        setFileDetailsModal(true)
+      } else {
+        toast({ title: "Error", description: "Failed to load file details", variant: "destructive" })
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to load file details", variant: "destructive" })
+    } finally {
+      setFileDetailsLoading(false)
+    }
+  }
+
   // --- Helpers ---
   const handleDrawerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -578,26 +599,14 @@ export default function DrawersPage() {
   }
 
 
+
+  const getBreadcrumbText = () => {
+    if (parentStack.length === 0) return "Drawers"
+    return parentStack.map((item) => item.name).join(" / ")
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
-      {/* Breadcrumbs - Copying design from space.tsx */}
-      <div className="mb-2 sm:mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-        <span className="cursor-pointer hover:text-foreground" onClick={handleRootClick}>
-          Drawers
-        </span>
-        {parentStack.map((drawer, index) => (
-          <div key={drawer.uid} className="flex items-center gap-2">
-            <span>/</span>
-            <span
-              className="cursor-pointer hover:text-foreground"
-              onClick={() => handleCrumbClick(index)}
-            >
-              {drawer.name}
-            </span>
-          </div>
-        ))}
-      </div>
-
       {/* Header */}
       <div className="mb-6 sm:mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -608,9 +617,18 @@ export default function DrawersPage() {
           )}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {parentStack.length > 0 ? parentStack[parentStack.length - 1].name : "Drawers"}
+              {getBreadcrumbText()}
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2">Manage your storage drawers and files</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
+              {parentStack.length > 0
+                ? "Manage drawers and files in this location"
+                : "Manage your storage drawers and files"}
+            </p>
+            {parentStack.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Path: {parentStack.map((item) => item.name).join(" > ")}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -669,7 +687,7 @@ export default function DrawersPage() {
                       </p>
 
                       {/* 3-dots */}
-                      <div className="relative mb-4">
+                      {/* <div className="relative mb-4">
                         <button
                           onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === drawer.uid ? null : drawer.uid); }}
                           className="p-2 hover:bg-muted rounded-full transition absolute -top-32 right-0 bg-white shadow-sm"
@@ -686,7 +704,7 @@ export default function DrawersPage() {
                             </button>
                           </div>
                         )}
-                      </div>
+                      </div> */}
 
                       {/* Action Buttons */}
                       <div className="flex gap-2 pt-4 border-t border-border">
@@ -710,8 +728,8 @@ export default function DrawersPage() {
               <h2 className="text-lg font-semibold text-foreground mb-4">Files</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {files.map((file) => (
-                  <Card key={file.uid} className="border-border hover:shadow-lg transition-all overflow-hidden">
-                    <div className="relative h-48 bg-muted overflow-hidden">
+                  <Card key={file.uid} className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer">
+                    <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleFileDetailsClick(file)}>
                       {file.images && file.images.length > 0 ? (
                         <img src={file.images[0].file} alt={file.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                       ) : (
@@ -730,7 +748,7 @@ export default function DrawersPage() {
                         {file.comments || "No comments"}
                       </p>
 
-                      <div className="relative mb-4">
+                      {/* <div className="relative mb-4">
                         <button
                           onClick={(e) => { e.stopPropagation(); setFileMenuOpen(fileMenuOpen === file.uid ? null : file.uid); }}
                           className="p-2 hover:bg-muted rounded-full transition"
@@ -747,7 +765,7 @@ export default function DrawersPage() {
                             </button>
                           </div>
                         )}
-                      </div>
+                      </div> */}
 
                       <div className="flex gap-2 pt-4 border-t border-border">
                         <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm" onClick={() => handleEditFileClick(file)}>
@@ -1080,6 +1098,135 @@ export default function DrawersPage() {
         </div>
       )}
 
+
+      {/* File Details Modal */}
+      {fileDetailsModal && fileDetails && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex items-center justify-between border-b border-border pb-3 sticky top-0 bg-background z-10">
+              <CardTitle className="text-lg sm:text-xl">{fileDetails.name}</CardTitle>
+              <button onClick={() => setFileDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </CardHeader>
+
+            <CardContent className="pt-4 space-y-4">
+              {fileDetailsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-2 border-muted-foreground border-t-foreground rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <>
+                  {/* Images Section */}
+                  {fileDetails.images && fileDetails.images.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-2">Images</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {fileDetails.images.map((image: any) => (
+                          <img
+                            key={image.uid}
+                            src={image.file || "/placeholder.svg"}
+                            alt={image.file_name}
+                            className="w-full h-32 object-cover rounded border border-border"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Key Information */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 border-t border-b border-border">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">File Name</label>
+                      <p className="text-foreground">{fileDetails.name || "-"}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">File ID</label>
+                      <p className="text-foreground">{fileDetails.file_id || "-"}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Storage</label>
+                      <p className="text-foreground">{fileDetails.storage?.name || "-"}</p>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {fileDetails.description && (
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Description</label>
+                      <p className="text-foreground text-sm">{fileDetails.description}</p>
+                    </div>
+                  )}
+
+                  {/* Comments */}
+                  {fileDetails.comments && (
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Comments</label>
+                      <p className="text-foreground text-sm">{fileDetails.comments}</p>
+                    </div>
+                  )}
+
+                  {/* Buyers Section */}
+                  {fileDetails.buyers && fileDetails.buyers.length > 0 && (
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Buyers</label>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {fileDetails.buyers.map((buyer: any) => (
+                          <div key={buyer.uid} className="bg-muted px-2 py-1 rounded text-xs text-foreground">
+                            {buyer.name || buyer.uid}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Projects Section */}
+                  {fileDetails.projects && fileDetails.projects.length > 0 && (
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Projects</label>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {fileDetails.projects.map((project: any) => (
+                          <div key={project.uid} className="bg-muted px-2 py-1 rounded text-xs text-foreground">
+                            {project.name || project.uid}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes Section */}
+                  {fileDetails.notes && fileDetails.notes.length > 0 && (
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase">Notes</label>
+                      <div className="space-y-1 mt-1">
+                        {fileDetails.notes.map((note: any) => (
+                          <div key={note.uid} className="bg-muted p-2 rounded text-xs text-foreground">
+                            {note.title || note.uid}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <div className="pt-4 border-t border-border">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase mr-2">Status</label>
+                    <p className="text-foreground inline-block bg-muted px-2 py-1 rounded text-sm">
+                      {fileDetails.status || "-"}
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+
+            <CardFooter className="border-t border-border flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setFileDetailsModal(false)}>
+                Close
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

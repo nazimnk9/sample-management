@@ -45,7 +45,7 @@ export default function AddSamplePage() {
     arrival_date: "",
     style_no: "",
     sku_no: "",
-    item: "",
+    // item: "", // Removed
     fabrication: "",
     weight: "",
     weight_type: "GM",
@@ -483,20 +483,65 @@ export default function AddSamplePage() {
                     </select>
                   </div>
 
-                  {/* Item */}
+                  {/* Item - Removed */}
+                  {/* Color */}
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Item</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Color</label>
                     <input
                       type="text"
-                      name="item"
-                      value={formData.item}
+                      name="color"
+                      value={formData.color}
                       onChange={handleChange}
-                      placeholder="e.g., T-Shirt"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.item ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      placeholder="e.g., Black"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
 
+                  {/* Size Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Size Type</label>
+                    <select
+                      name="size_type"
+                      value={formData.size_type}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="CENTIMETER">CENTIMETER</option>
+                      <option value="LETTER">LETTER</option>
+                    </select>
+                  </div>
+
+                  {/* Size */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Size</label>
+                    {formData.size_type === "LETTER" ? (
+                      <select
+                        name="size"
+                        value={formData.size}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                          }`}
+                      >
+                        <option value="">Select Size</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        name="size"
+                        value={formData.size}
+                        onChange={handleChange}
+                        placeholder="e.g., 20"
+                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                          }`}
+                      />
+                    )}
+                  </div>
                   {/* Color */}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Color</label>
@@ -512,7 +557,7 @@ export default function AddSamplePage() {
                   </div>
 
                   {/* Size */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Size</label>
                     <input
                       type="text"
@@ -523,20 +568,8 @@ export default function AddSamplePage() {
                       className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
-                  </div>
-                  {/* Size Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Size Type</label>
-                    <select
-                      name="size_type"
-                      value={formData.size_type}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="CENTIMETER">CENTIMETER</option>
-                      <option value="LETTER">LETTER</option>
-                    </select>
-                  </div>
+                  </div> */}
+                  {/* Size Type - moved above */}
                 </div>
               </div>
 
