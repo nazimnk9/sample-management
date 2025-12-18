@@ -2116,7 +2116,7 @@ export default function SpacePage() {
                                                             key={image.uid}
                                                             src={image.file || "/placeholder.svg"}
                                                             alt={image.file_name}
-                                                            className="w-full h-32 object-cover rounded border border-border"
+                                                            className="w-full h-32 object-fixed rounded border border-border"
                                                         />
                                                     ))}
                                                 </div>

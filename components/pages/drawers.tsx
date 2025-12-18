@@ -410,8 +410,17 @@ export default function DrawersPage() {
 
   const handleEditFileClick = async (file: FileItem) => {
     setSelectedFile(file)
+    // Determine storage UID logic
+      let storageUid = currentParentUid
+      if (file.storage_uid) storageUid = file.storage_uid
+      else if (typeof file.storage === 'object' && file.storage?.uid) storageUid = file.storage.uid
+
+      if (!storageUid) {
+        toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
+        return
+      }
     try {
-      const response = await apiCall(`/sample_manager/storage_file/${currentParentUid}/${file.uid}`)
+      const response = await apiCall(`/sample_manager/storage_file/${storageUid}/${file.uid}`)
       if (response.ok) {
         const data = await response.json()
         setFileFormData({
@@ -754,96 +763,96 @@ export default function DrawersPage() {
           </div>
         </div>
         {/* Global Search & Filter */}
-      <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
-        <div className="relative w-[400px] max-w-sm" ref={searchContainerRef}>
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search drawers & files..."
-            value={searchQuery}
-            onKeyDown={handleSearchKeyDown}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-              if (e.target.value) setShowSearchDropdown(true)
-            }}
-            onFocus={() => {
-              if (searchQuery) setShowSearchDropdown(true)
-            }}
-            className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
+        <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
+          <div className="relative w-[400px] max-w-sm" ref={searchContainerRef}>
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              placeholder="Search drawers & files..."
+              value={searchQuery}
+              onKeyDown={handleSearchKeyDown}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                if (e.target.value) setShowSearchDropdown(true)
+              }}
+              onFocus={() => {
+                if (searchQuery) setShowSearchDropdown(true)
+              }}
+              className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
 
-          {/* Search Filter List Dropdown */}
-          {showSearchDropdown && searchQuery && (
-            <div className="absolute top-10 right-0 w-full z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
-              {isSearchLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                </div>
-              ) : (
-                <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
-                  {/* Left Side: Drawers */}
-                  <div className="flex-1 p-4">
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Drawers</h3>
-                    <div className="space-y-1">
-                      {searchResults.drawers.map((drawer) => (
-                        <div
-                          key={drawer.uid}
-                          // onClick={() => handleSearchDrawerClick(drawer)}
-                           onClick={() => {
-                                                            handleDrawerClick(drawer)
-                                                            setSearchQuery("")
-                                                        }}
-                          className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
-                        >
-                          <Archive className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-sm font-medium line-clamp-1">{drawer.name}</span>
-                        </div>
-                      ))}
-                      {searchResults.drawers.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No drawers found</p>
-                      )}
+            {/* Search Filter List Dropdown */}
+            {showSearchDropdown && searchQuery && (
+              <div className="absolute top-10 right-0 w-full z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
+                {isSearchLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
+                    {/* Left Side: Drawers */}
+                    <div className="flex-1 p-4">
+                      <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Drawers</h3>
+                      <div className="space-y-1">
+                        {searchResults.drawers.map((drawer) => (
+                          <div
+                            key={drawer.uid}
+                            // onClick={() => handleSearchDrawerClick(drawer)}
+                            onClick={() => {
+                              handleDrawerClick(drawer)
+                              setSearchQuery("")
+                            }}
+                            className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
+                          >
+                            <Archive className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-sm font-medium line-clamp-1">{drawer.name}</span>
+                          </div>
+                        ))}
+                        {searchResults.drawers.length === 0 && (
+                          <p className="text-xs text-muted-foreground">No drawers found</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Side: Files */}
+                    <div className="flex-1 p-4 bg-muted/10">
+                      <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Files</h3>
+                      <div className="space-y-2">
+                        {searchResults.files.map((file) => (
+                          <div
+                            key={file.uid}
+                            onClick={() => handleSearchFileClick(file)}
+                            className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
+                          >
+                            <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
+                              {file.images && file.images.length > 0 ? (
+                                <img
+                                  src={file.images[0].file}
+                                  alt={file.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <FileText className="w-full h-full p-2 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium">{file.name}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {searchResults.files.length === 0 && (
+                          <p className="text-xs text-muted-foreground">No files found</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-
-                  {/* Right Side: Files */}
-                  <div className="flex-1 p-4 bg-muted/10">
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Files</h3>
-                    <div className="space-y-2">
-                      {searchResults.files.map((file) => (
-                        <div
-                          key={file.uid}
-                          onClick={() => handleSearchFileClick(file)}
-                          className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
-                        >
-                          <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
-                            {file.images && file.images.length > 0 ? (
-                              <img
-                                src={file.images[0].file}
-                                alt={file.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium">{file.name}</p>
-                          </div>
-                        </div>
-                      ))}
-                      {searchResults.files.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No files found</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      </div>
 
-      
+
 
       {/* Add Buttons */}
       <div className="flex gap-2 mb-6 sm:mb-8">
@@ -878,7 +887,7 @@ export default function DrawersPage() {
                   <Card key={drawer.uid} className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group">
                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleDrawerClick(drawer)}>
                       {drawer.image ? (
-                        <img src={drawer.image} alt={drawer.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <img src={drawer.image} alt={drawer.name} className="w-full h-full object-fixed group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
                           <Archive className="w-12 h-12 text-muted-foreground" />
@@ -943,7 +952,7 @@ export default function DrawersPage() {
                   <Card key={file.uid} className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer">
                     <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleFileDetailsClick(file)}>
                       {file.images && file.images.length > 0 ? (
-                        <img src={file.images[0].file} alt={file.name} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                        <img src={file.images[0].file} alt={file.name} className="w-full h-full object-fixed hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
                           <FileText className="w-12 h-12 text-muted-foreground" />
@@ -1025,7 +1034,7 @@ export default function DrawersPage() {
                   <label className="text-sm font-medium text-foreground block mb-2">Image</label>
                   {drawerImagePreview ? (
                     <div className="mb-3 relative">
-                      <img src={drawerImagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+                      <img src={drawerImagePreview} alt="Preview" className="w-full h-40 object-fixed rounded-lg" />
                       <button
                         type="button"
                         onClick={() => {
@@ -1245,7 +1254,7 @@ export default function DrawersPage() {
                         <span>{isUploading ? "Uploading..." : "Select Images"}</span>
                       </Button>
                     </label>
-                    <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p>
+                    {/* <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p> */}
                   </div>
 
                   {fileImages.length > 0 && (
@@ -1339,7 +1348,7 @@ export default function DrawersPage() {
                             key={image.uid}
                             src={image.file || "/placeholder.svg"}
                             alt={image.file_name}
-                            className="w-full h-32 object-cover rounded border border-border"
+                            className="w-full h-32 object-fixed rounded border border-border"
                           />
                         ))}
                       </div>
