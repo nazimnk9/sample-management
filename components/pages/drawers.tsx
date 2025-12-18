@@ -764,7 +764,7 @@ export default function DrawersPage() {
         </div>
         {/* Global Search & Filter */}
         <div className="flex items-center flex-1 justify-center gap-2 hidden sm:flex">
-          <div className="relative w-[600px]" ref={searchContainerRef}>
+          <div className="relative w-[600px] mr-70" ref={searchContainerRef}>
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
               placeholder="Search drawers & files..."
