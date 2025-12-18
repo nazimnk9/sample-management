@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Edit2, Archive, FileText, ChevronLeft, X, Loader2, MoreVertical, ChevronDown, Upload } from "lucide-react"
+import { Plus, Trash2, Edit2, Archive, FileText, ChevronLeft, X, Loader2, MoreVertical, ChevronDown, Upload, Search, RectangleHorizontal, FolderOpen } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getCookie, apiCall } from "@/lib/auth-utils"
 import Link from "next/link"
@@ -39,7 +39,11 @@ interface FileItem {
   note_uids: string[]
   project_uids: string[]
   buyer_uids: string[]
-  storage: number
+  storage: number | {
+    uid: string
+    name: string
+    type: string
+  }
   images?: { uid: string; file: string; file_name?: string }[]
   // These fields might be returned by API, adding them for completeness in edit form
   style_no?: string
@@ -53,6 +57,7 @@ interface FileItem {
   color?: string
   size?: string
   arrival_date?: string
+  storage_uid?: string
 }
 
 interface Buyer {
@@ -111,6 +116,27 @@ export default function DrawersPage() {
   const [fileDetails, setFileDetails] = useState<any>(null)
   const [fileDetailsLoading, setFileDetailsLoading] = useState(false)
 
+  // Search specific state
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<{ drawers: Drawer[]; files: FileItem[] }>({ drawers: [], files: [] })
+  const [isSearchLoading, setIsSearchLoading] = useState(false)
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+
+  // Handle click outside to close search dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+
   // Drawer Edit Form
   const [drawerFormData, setDrawerFormData] = useState({ name: "", description: "" })
   const [drawerImage, setDrawerImage] = useState<File | null>(null)
@@ -163,6 +189,37 @@ export default function DrawersPage() {
     fetchDrawersAndFiles()
     fetchDropdownData()
   }, [currentParentUid])
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim()) {
+        setIsSearchLoading(true)
+        try {
+          const [drawersRes, filesRes] = await Promise.all([
+            apiCall(`/sample_manager/storage/?type=DRAWER&search=${searchQuery}`),
+            apiCall(`/sample_manager/storage_file/?search=${searchQuery}`)
+          ])
+
+          const drawersData = drawersRes.ok ? await drawersRes.json() : []
+          const filesData = filesRes.ok ? await filesRes.json() : []
+
+          setSearchResults({
+            drawers: Array.isArray(drawersData) ? drawersData : drawersData.results || [],
+            files: Array.isArray(filesData) ? filesData : filesData.results || []
+          })
+        } catch (error) {
+          console.error("Search error:", error)
+        } finally {
+          setIsSearchLoading(false)
+        }
+      } else {
+        setSearchResults({ drawers: [], files: [] })
+      }
+    }, 500)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
+
 
   const fetchDropdownData = async () => {
     try {
@@ -238,8 +295,15 @@ export default function DrawersPage() {
     if (parentStack.length > 0) {
       const newStack = parentStack.slice(0, -1)
       setParentStack(newStack)
-      setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+      // setCurrentParentUid(newStack.length > 0 ? newStack[newStack.length - 1].uid : null)
+      // setFiles([])
+      const newParentUid = newStack.length > 0 ? newStack[newStack.length - 1].uid : null
+      setCurrentParentUid(newParentUid)
       setFiles([])
+
+      // Update URL to reflect the new state
+      const newUrl = newParentUid ? `/drawers?currentParentUid=${newParentUid}` : '/drawers'
+      router.push(newUrl)
     } else {
       setCurrentParentUid(null)
     }
@@ -385,18 +449,23 @@ export default function DrawersPage() {
       const storedImageUids = localStorage.getItem("file_edit_image_uids")
       const imageUids = storedImageUids ? JSON.parse(storedImageUids) : []
 
-      // Ensure we merge or use the up-to-date image UIDs from state/local storage
-      // logic: The updated fileImages state should be the source of truth, 
-      // but we also used local storage for uploads. 
-      // Let's use imageUids from local storage as it accumulates new uploads + initially existing.
+      // Determine storage UID logic
+      let storageUid = currentParentUid
+      if (selectedFile.storage_uid) storageUid = selectedFile.storage_uid
+      else if (typeof selectedFile.storage === 'object' && selectedFile.storage?.uid) storageUid = selectedFile.storage.uid
+
+      if (!storageUid) {
+        toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
+        return
+      }
 
       const dataToSubmit = {
         ...fileFormData,
         image_uids: imageUids,
-        storage_uid: currentParentUid
+        storage_uid: storageUid
       }
 
-      const response = await apiCall(`/sample_manager/storage_file/${currentParentUid}/${selectedFile.uid}`, {
+      const response = await apiCall(`/sample_manager/storage_file/${storageUid}/${selectedFile.uid}`, {
         method: "PUT",
         body: JSON.stringify(dataToSubmit),
       })
@@ -422,10 +491,17 @@ export default function DrawersPage() {
   }
 
   const handleConfirmDeleteFile = async () => {
-    if (!selectedFile || !currentParentUid) return
+    if (!selectedFile) return
+    // Logic for storageUid
+    let storageUid = currentParentUid
+    if (selectedFile.storage_uid) storageUid = selectedFile.storage_uid
+    else if (typeof selectedFile.storage === 'object' && selectedFile.storage?.uid) storageUid = selectedFile.storage.uid
+
+    if (!storageUid) return
+
     setIsDeleting(true)
     try {
-      const response = await apiCall(`/sample_manager/storage_file/${currentParentUid}/${selectedFile.uid}`, { method: "DELETE" })
+      const response = await apiCall(`/sample_manager/storage_file/${storageUid}/${selectedFile.uid}`, { method: "DELETE" })
       if (!response.ok) throw new Error("Failed to delete")
 
       toast({ title: "Success", description: "File deleted successfully" })
@@ -441,7 +517,12 @@ export default function DrawersPage() {
   const handleFileDetailsClick = async (file: FileItem) => {
     setFileDetailsLoading(true)
     try {
-      const response = await apiCall(`/sample_manager/storage_file/${currentParentUid}/${file.uid}`)
+      // Logic for storageUid
+      let storageUid = currentParentUid
+      if (file.storage_uid) storageUid = file.storage_uid
+      else if (typeof file.storage === 'object' && file.storage?.uid) storageUid = file.storage.uid
+
+      const response = await apiCall(`/sample_manager/storage_file/${storageUid}/${file.uid}`)
       if (response.ok) {
         const data = await response.json()
         setFileDetails(data)
@@ -454,6 +535,47 @@ export default function DrawersPage() {
     } finally {
       setFileDetailsLoading(false)
     }
+  }
+
+  const handleSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setShowSearchDropdown(false)
+      setIsLoading(true)
+      try {
+        const [drawersRes, filesRes] = await Promise.all([
+          apiCall(`/sample_manager/storage/?type=DRAWER&search=${searchQuery}`),
+          apiCall(`/sample_manager/storage_file/?search=${searchQuery}`)
+        ])
+
+        if (drawersRes.ok) {
+          const drawersData = await drawersRes.json()
+          setDrawers(Array.isArray(drawersData) ? drawersData : drawersData.results || [])
+        }
+
+        if (filesRes.ok) {
+          const filesData = await filesRes.json()
+          setFiles(Array.isArray(filesData) ? filesData : filesData.results || [])
+        }
+      } catch (error) {
+        console.error("Search on Enter error:", error)
+        toast({ title: "Error", description: "Failed to fetch search results", variant: "destructive" })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleSearchDrawerClick = (drawer: Drawer) => {
+    setParentStack([...parentStack, { uid: drawer.uid, name: drawer.name }])
+    setCurrentParentUid(drawer.uid)
+    const newUrl = `/drawers?currentParentUid=${drawer.uid}`
+    router.push(newUrl)
+    setSearchQuery("")
+  }
+
+  const handleSearchFileClick = (file: FileItem) => {
+    setFileDetailsLoading(true)
+    handleFileDetailsClick(file)
   }
 
   // --- Helpers ---
@@ -631,7 +753,97 @@ export default function DrawersPage() {
             )}
           </div>
         </div>
+        {/* Global Search & Filter */}
+      <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
+        <div className="relative w-[400px] max-w-sm" ref={searchContainerRef}>
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <input
+            placeholder="Search drawers & files..."
+            value={searchQuery}
+            onKeyDown={handleSearchKeyDown}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              if (e.target.value) setShowSearchDropdown(true)
+            }}
+            onFocus={() => {
+              if (searchQuery) setShowSearchDropdown(true)
+            }}
+            className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
+
+          {/* Search Filter List Dropdown */}
+          {showSearchDropdown && searchQuery && (
+            <div className="absolute top-10 right-0 w-full z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
+              {isSearchLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
+                  {/* Left Side: Drawers */}
+                  <div className="flex-1 p-4">
+                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Drawers</h3>
+                    <div className="space-y-1">
+                      {searchResults.drawers.map((drawer) => (
+                        <div
+                          key={drawer.uid}
+                          // onClick={() => handleSearchDrawerClick(drawer)}
+                           onClick={() => {
+                                                            handleDrawerClick(drawer)
+                                                            setSearchQuery("")
+                                                        }}
+                          className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
+                        >
+                          <Archive className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-sm font-medium line-clamp-1">{drawer.name}</span>
+                        </div>
+                      ))}
+                      {searchResults.drawers.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No drawers found</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Side: Files */}
+                  <div className="flex-1 p-4 bg-muted/10">
+                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Files</h3>
+                    <div className="space-y-2">
+                      {searchResults.files.map((file) => (
+                        <div
+                          key={file.uid}
+                          onClick={() => handleSearchFileClick(file)}
+                          className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
+                        >
+                          <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
+                            {file.images && file.images.length > 0 ? (
+                              <img
+                                src={file.images[0].file}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium">{file.name}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {searchResults.files.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No files found</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+      </div>
+
+      
 
       {/* Add Buttons */}
       <div className="flex gap-2 mb-6 sm:mb-8">
