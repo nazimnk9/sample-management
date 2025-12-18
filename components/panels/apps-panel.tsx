@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function AppsPanel() {
   return (
     <div className="absolute right-0 mt-2 w-80 bg-white border border-border rounded-lg shadow-xl p-6 z-50">
@@ -5,16 +7,16 @@ export default function AppsPanel() {
 
       <div className="grid grid-cols-2 gap-4">
         {/* Space */}
-        <div className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+        <Link href="/space" className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block">
           <h4 className="font-medium text-foreground mb-2">Space</h4>
           <p className="text-xs text-muted-foreground">Organize and manage sample storage spaces efficiently</p>
-        </div>
+        </Link>
 
         {/* Drawer */}
-        <div className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+        <Link href="/drawers" className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block">
           <h4 className="font-medium text-foreground mb-2">Drawer</h4>
           <p className="text-xs text-muted-foreground">Track and organize sample drawers and compartments</p>
-        </div>
+        </Link>
       </div>
     </div>
   )
