@@ -1279,7 +1279,7 @@ export default function DrawersPage() {
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(img.uid)}
-                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-100 group-hover:opacity-100 transition"
                             >
                               <X className="w-4 h-4" />
                             </button>

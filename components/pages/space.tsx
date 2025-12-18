@@ -2035,12 +2035,12 @@ export default function SpacePage() {
                                                             <img
                                                                 src={img.file || "/placeholder.svg"}
                                                                 alt="sample"
-                                                                className="w-full h-24 object-cover rounded-lg border border-border"
+                                                                className="w-full h-24 object-fixed rounded-lg border border-border"
                                                             />
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleSampleImageRemove(img.uid)}
-                                                                className="absolute top-1 right-1 bg-red-500 text-white p-0.5 rounded opacity-0 group-hover:opacity-100 transition"
+                                                                className="absolute top-1 right-1 bg-red-500 text-white p-0.5 rounded opacity-100 group-hover:opacity-100 transition"
                                                             >
                                                                 <X className="w-3 h-3" />
                                                             </button>

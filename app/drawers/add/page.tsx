@@ -164,7 +164,7 @@ export default function AddDrawerPage() {
                                         <img
                                             src={imagePreview || "/placeholder.svg"}
                                             alt="Preview"
-                                            className="w-full h-40 object-cover rounded-lg border border-border"
+                                            className="w-full h-40 object-fixed rounded-lg border border-border"
                                         />
                                         <button
                                             type="button"

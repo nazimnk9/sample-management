@@ -510,7 +510,7 @@ export default function AddFilePage() {
                                             <span>{isUploading ? "Uploading..." : "Select Images"}</span>
                                         </Button>
                                     </label>
-                                    <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p>
+                                    {/* <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p> */}
                                 </div>
 
                                 {uploadedImages.length > 0 && (
@@ -525,7 +525,7 @@ export default function AddFilePage() {
                                                         <img
                                                             src={img.preview || "/placeholder.svg"}
                                                             alt="preview"
-                                                            className="w-full h-32 object-cover rounded-lg border border-border"
+                                                            className="w-full h-32 object-fixed rounded-lg border border-border"
                                                         />
                                                     ) : (
                                                         <div className="w-full h-32 bg-muted rounded-lg border border-border flex items-center justify-center">
@@ -535,7 +535,7 @@ export default function AddFilePage() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveImage(img.uid)}
-                                                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                                                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-100 group-hover:opacity-100 transition"
                                                     >
                                                         <X className="w-4 h-4" />
                                                     </button>
