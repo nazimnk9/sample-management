@@ -1690,7 +1690,14 @@ export default function SpacePage() {
                                                 <label className="text-sm font-medium text-foreground block mb-2">Category</label>
                                                 <select
                                                     value={sampleEditData.category}
-                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, category: e.target.value })}
+                                                    onChange={(e) => {
+                                                        const newCategory = e.target.value
+                                                        setSampleEditData({
+                                                            ...sampleEditData,
+                                                            category: newCategory,
+                                                            sub_category: newCategory === "WOVEN" ? "DENIM" : "MENS"
+                                                        })
+                                                    }}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
                                                     <option value="CIRCULAR_KNIT">CIRCULAR_KNIT</option>
@@ -1707,16 +1714,25 @@ export default function SpacePage() {
                                                     onChange={(e) => setSampleEditData({ ...sampleEditData, sub_category: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
-                                                    <option value="MENS">MENS</option>
-                                                    <option value="JR_LADIES">JR_LADIES</option>
-                                                    <option value="WOMEN">WOMEN</option>
-                                                    <option value="JUNIOR_BOYS">JUNIOR_BOYS</option>
-                                                    <option value="SENIOR_BOYS">SENIOR_BOYS</option>
-                                                    <option value="TODDLER_BOYS">TODDLER_BOYS</option>
-                                                    <option value="JUNIOR_GIRLS">JUNIOR_GIRLS</option>
-                                                    <option value="SENIOR_GIRLS">SENIOR_GIRLS</option>
-                                                    <option value="TODDLER_GIRLS">TODDLER_GIRLS</option>
-                                                    <option value="KIDS">KIDS</option>
+                                                    {sampleEditData.category === "WOVEN" ? (
+                                                        <>
+                                                            <option value="DENIM">DENIM</option>
+                                                            <option value="NON_DENIM">NON_DENIM</option>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <option value="MENS">MENS</option>
+                                                            <option value="JR_LADIES">JR_LADIES</option>
+                                                            <option value="WOMEN">WOMEN</option>
+                                                            <option value="JUNIOR_BOYS">JUNIOR_BOYS</option>
+                                                            <option value="SENIOR_BOYS">SENIOR_BOYS</option>
+                                                            <option value="TODDLER_BOYS">TODDLER_BOYS</option>
+                                                            <option value="JUNIOR_GIRLS">JUNIOR_GIRLS</option>
+                                                            <option value="SENIOR_GIRLS">SENIOR_GIRLS</option>
+                                                            <option value="TODDLER_GIRLS">TODDLER_GIRLS</option>
+                                                            <option value="KIDS">KIDS</option>
+                                                        </>
+                                                    )}
                                                 </select>
                                             </div>
 
@@ -2168,6 +2184,18 @@ export default function SpacePage() {
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Comments</label>
                                                 <p className="text-foreground text-sm">{sampleDetails.comments}</p>
+                                            </div>
+                                        )}
+                                        {sampleDetails.category && (
+                                            <div>
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase">Category</label>
+                                                <p className="text-foreground text-sm">{sampleDetails.category}</p>
+                                            </div>
+                                        )}
+                                        {sampleDetails.sub_category && (
+                                            <div>
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase">Sub Category</label>
+                                                <p className="text-foreground text-sm">{sampleDetails.sub_category}</p>
                                             </div>
                                         )}
 

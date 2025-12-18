@@ -231,7 +231,20 @@ export default function AddSamplePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev) => {
+      const updates: any = { [name]: value }
+
+      // Reset sub_category if category changes
+      if (name === "category") {
+        if (value === "WOVEN") {
+          updates.sub_category = "DENIM"
+        } else {
+          updates.sub_category = "MENS"
+        }
+      }
+
+      return { ...prev, ...updates }
+    })
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev }
@@ -470,22 +483,31 @@ export default function AddSamplePage() {
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option value="MENS">MENS</option>
-                      <option value="JR_LADIES">JR_LADIES</option>
-                      <option value="WOMEN">WOMEN</option>
-                      <option value="JUNIOR_BOYS">JUNIOR_BOYS</option>
-                      <option value="SENIOR_BOYS">SENIOR_BOYS</option>
-                      <option value="TODDLER_BOYS">TODDLER_BOYS</option>
-                      <option value="JUNIOR_GIRLS">JUNIOR_GIRLS</option>
-                      <option value="SENIOR_GIRLS">SENIOR_GIRLS</option>
-                      <option value="TODDLER_GIRLS">TODDLER_GIRLS</option>
-                      <option value="KIDS">KIDS</option>
+                      {formData.category === "WOVEN" ? (
+                        <>
+                          <option value="DENIM">DENIM</option>
+                          <option value="NON_DENIM">NON_DENIM</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="MENS">MENS</option>
+                          <option value="JR_LADIES">JR_LADIES</option>
+                          <option value="WOMEN">WOMEN</option>
+                          <option value="JUNIOR_BOYS">JUNIOR_BOYS</option>
+                          <option value="SENIOR_BOYS">SENIOR_BOYS</option>
+                          <option value="TODDLER_BOYS">TODDLER_BOYS</option>
+                          <option value="JUNIOR_GIRLS">JUNIOR_GIRLS</option>
+                          <option value="SENIOR_GIRLS">SENIOR_GIRLS</option>
+                          <option value="TODDLER_GIRLS">TODDLER_GIRLS</option>
+                          <option value="KIDS">KIDS</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
                   {/* Item - Removed */}
                   {/* Color */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Color</label>
                     <input
                       type="text"
@@ -496,7 +518,7 @@ export default function AddSamplePage() {
                       className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Size Type */}
                   <div>
@@ -543,7 +565,7 @@ export default function AddSamplePage() {
                     )}
                   </div>
                   {/* Color */}
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-foreground mb-2">Color</label>
                     <input
                       type="text"
