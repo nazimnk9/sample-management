@@ -976,8 +976,8 @@ export default function SpacePage() {
 
                 {/* Global Search Option */}
                 {/* Global Search & Filter */}
-                <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
-                    <div className="relative w-[600px] max-w-sm" ref={searchContainerRef}>
+                <div className="flex items-center flex-1 justify-center gap-2 hidden sm:flex">
+                    <div className="relative w-[600px]" ref={searchContainerRef}>
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <input
                             placeholder="Search spaces & samples..."

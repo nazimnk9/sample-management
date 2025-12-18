@@ -411,14 +411,14 @@ export default function DrawersPage() {
   const handleEditFileClick = async (file: FileItem) => {
     setSelectedFile(file)
     // Determine storage UID logic
-      let storageUid = currentParentUid
-      if (file.storage_uid) storageUid = file.storage_uid
-      else if (typeof file.storage === 'object' && file.storage?.uid) storageUid = file.storage.uid
+    let storageUid = currentParentUid
+    if (file.storage_uid) storageUid = file.storage_uid
+    else if (typeof file.storage === 'object' && file.storage?.uid) storageUid = file.storage.uid
 
-      if (!storageUid) {
-        toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
-        return
-      }
+    if (!storageUid) {
+      toast({ title: "Error", description: "Missing storage information", variant: "destructive" })
+      return
+    }
     try {
       const response = await apiCall(`/sample_manager/storage_file/${storageUid}/${file.uid}`)
       if (response.ok) {
@@ -763,8 +763,8 @@ export default function DrawersPage() {
           </div>
         </div>
         {/* Global Search & Filter */}
-        <div className="flex items-center ml-auto mr-4 gap-2 hidden sm:flex">
-          <div className="relative w-[400px] max-w-sm" ref={searchContainerRef}>
+        <div className="flex items-center flex-1 justify-center gap-2 hidden sm:flex">
+          <div className="relative w-[600px]" ref={searchContainerRef}>
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
               placeholder="Search drawers & files..."
