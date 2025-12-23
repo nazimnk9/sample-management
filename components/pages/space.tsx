@@ -1026,8 +1026,8 @@ export default function SpacePage() {
 
                 {/* Global Search Option */}
                 {/* Global Search & Filter */}
-                <div className="flex items-center flex-1 justify-center gap-2 hidden sm:flex">
-                    <div className="relative w-[600px]" ref={searchContainerRef}>
+                <div className="flex flex-col lg:flex-row items-center flex-1 justify-center gap-3 w-full">
+                    <div className="relative w-full lg:w-[600px]" ref={searchContainerRef}>
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <input
                             placeholder="Search spaces & samples..."
@@ -1051,10 +1051,10 @@ export default function SpacePage() {
                                         <Loader2 className="w-6 h-6 animate-spin text-primary" />
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-border">
+                                    <div className="flex flex-row divide-x border-border">
                                         {/* Left Side: Spaces */}
-                                        <div className="flex-1 p-4">
-                                            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Spaces</h3>
+                                        <div className="flex-1 p-1.5 lg:p-4">
+                                            <h3 className="text-[10px] lg:text-sm font-semibold mb-1.5 lg:mb-3 text-muted-foreground uppercase">Spaces</h3>
                                             <div className="space-y-1">
                                                 {searchResults.spaces.map((space) => (
                                                     <div
@@ -1063,29 +1063,29 @@ export default function SpacePage() {
                                                             handleSpaceCardClick(space)
                                                             setSearchQuery("")
                                                         }}
-                                                        className="p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-2 transition-colors"
+                                                        className="p-1 lg:p-2 rounded hover:bg-muted cursor-pointer flex items-center gap-1.5 lg:gap-2 transition-colors"
                                                     >
-                                                        <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
-                                                        <span className="text-sm font-medium line-clamp-1">{space.name}</span>
+                                                        <FolderOpen className="w-3 h-3 lg:w-4 lg:h-4 text-primary flex-shrink-0" />
+                                                        <span className="text-[10px] lg:text-sm font-medium">{space.name}</span>
                                                     </div>
                                                 ))}
                                                 {searchResults.spaces.length === 0 && (
-                                                    <p className="text-xs text-muted-foreground">No spaces found</p>
+                                                    <p className="text-[10px] lg:text-xs text-muted-foreground">No spaces found</p>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Right Side: Samples */}
-                                        <div className="flex-1 p-4 bg-muted/10">
-                                            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase">Samples</h3>
-                                            <div className="space-y-2">
+                                        <div className="flex-1 p-1.5 lg:p-4 bg-muted/10">
+                                            <h3 className="text-[10px] lg:text-sm font-semibold mb-1.5 lg:mb-3 text-muted-foreground uppercase">Samples</h3>
+                                            <div className="space-y-1 lg:space-y-2">
                                                 {searchResults.samples.map((sample) => (
                                                     <div
                                                         key={sample.uid}
                                                         onClick={() => handleSearchSampleClick(sample)}
-                                                        className="p-2 border border-primary bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
+                                                        className="p-1 lg:p-2 border border-primary bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-1.5 lg:gap-2 transition-all"
                                                     >
-                                                        <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
+                                                        <div className="w-5 h-5 lg:w-8 lg:h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
                                                             {sample.images && sample.images.length > 0 ? (
                                                                 <img
                                                                     src={sample.images[0].file}
@@ -1093,11 +1093,11 @@ export default function SpacePage() {
                                                                     className="w-full h-full object-fixed"
                                                                 />
                                                             ) : (
-                                                                <RectangleHorizontal className="w-full h-full p-2 text-muted-foreground" />
+                                                                <RectangleHorizontal className="w-full h-full p-0.5 lg:p-2 text-muted-foreground" />
                                                             )}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-sm font-medium">{sample.name}</p>
+                                                            <p className="text-[10px] lg:text-sm font-medium">{sample.name}</p>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -1112,280 +1112,282 @@ export default function SpacePage() {
                         )}
                     </div>
 
-                    <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
-                                <Filter className="h-4 w-4" />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
-                            <SheetHeader>
-                                <SheetTitle>Filter Samples</SheetTitle>
-                                <SheetDescription>
-                                    Apply filters to narrow down the sample list.
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div className="py-6 px-6 space-y-6">
-                                {/* Weight Filter */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <Label>Weight Range</Label>
-                                        <span className="text-xs text-muted-foreground">{weightRange[0]} - {weightRange[1]}</span>
-                                    </div>
-                                    <Slider
-                                        value={weightRange}
-                                        min={0}
-                                        max={2000}
-                                        step={10}
-                                        onValueChange={(val: any) => setWeightRange(val)}
-                                        className="py-2"
-                                    />
-                                </div>
-
-                                {/* Size Filter */}
-                                <div className="space-y-3">
-                                    <Label className="block">Size Type</Label>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id="size-letter"
-                                                checked={sizeType === 'letter'}
-                                                onCheckedChange={() => setSizeType(sizeType === 'letter' ? null : 'letter')}
-                                            />
-                                            <Label htmlFor="size-letter" className="cursor-pointer">Letter Size</Label>
-                                        </div>
-                                        {sizeType === 'letter' && (
-                                            <div className="relative">
-                                                <Select value={letterSize} onValueChange={setLetterSize}>
-                                                    <SelectTrigger className="w-full mt-1 pr-8">
-                                                        <SelectValue placeholder="Select size" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {LETTER_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
-                                                {letterSize && (
-                                                    <X
-                                                        className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            setLetterSize("")
-                                                        }}
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="flex items-center space-x-2 mt-2">
-                                            <Checkbox
-                                                id="size-cen"
-                                                checked={sizeType === 'centimeter'}
-                                                onCheckedChange={() => setSizeType(sizeType === 'centimeter' ? null : 'centimeter')}
-                                            />
-                                            <Label htmlFor="size-cen" className="cursor-pointer">Centimeter Size</Label>
-                                        </div>
-                                        {sizeType === 'centimeter' && (
-                                            <div className="pt-2 pl-6">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <Label className="text-xs text-muted-foreground">Range ({centimeterRange[0]} - {centimeterRange[1]})</Label>
-                                                </div>
-                                                <Slider
-                                                    value={centimeterRange}
-                                                    min={0}
-                                                    max={200}
-                                                    step={1}
-                                                    onValueChange={(val: any) => setCentimeterRange(val)}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Color Filter */}
-                                <div className="space-y-3">
-                                    <Label>Color</Label>
-                                    <div className="relative">
-                                        <Select value={selectedColor} onValueChange={setSelectedColor}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select color" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Colors</SelectItem>
-                                                {FILTER_COLORS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {selectedColor && selectedColor !== "all" && (
-                                            <X
-                                                className="absolute left-29 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSelectedColor("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Sample Type Filter */}
-                                <div className="space-y-3">
-                                    <Label>Sample Type</Label>
-                                    <div className="relative">
-                                        <Select value={sampleType} onValueChange={setSampleType}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Types</SelectItem>
-                                                {FILTER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {sampleType && sampleType !== "all" && (
-                                            <X
-                                                className="absolute left-46 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSampleType("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Buyer Filter */}
-                                <div className="space-y-3">
-                                    <Label>Buyer</Label>
-                                    <div className="relative">
-                                        <Select value={selectedBuyer} onValueChange={setSelectedBuyer}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select buyer" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Buyers</SelectItem>
-                                                {buyers.map(b => <SelectItem key={b.uid} value={b.uid}>{b.name}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {selectedBuyer && selectedBuyer !== "all" && (
-                                            <X
-                                                className="absolute left-27 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSelectedBuyer("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Project Filter */}
-                                <div className="space-y-3">
-                                    <Label>Project</Label>
-                                    <div className="relative">
-                                        <Select value={selectedProject} onValueChange={setSelectedProject}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select project" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Projects</SelectItem>
-                                                {projects.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {selectedProject && selectedProject !== "all" && (
-                                            <X
-                                                className="absolute left-32 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSelectedProject("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Category Filter */}
-                                <div className="space-y-3">
-                                    <Label>Category</Label>
-                                    <div className="relative">
-                                        <Select value={category} onValueChange={setCategory}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Categories</SelectItem>
-                                                {FILTER_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {category && category !== "all" && (
-                                            <X
-                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setCategory("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Sub Category Filter */}
-                                <div className="space-y-3">
-                                    <Label>Sub Category</Label>
-                                    <div className="relative">
-                                        <Select value={subCategory} onValueChange={setSubCategory}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select sub category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Sub Categories</SelectItem>
-                                                {FILTER_SUB_CATEGORIES.map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {subCategory && subCategory !== "all" && (
-                                            <X
-                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSubCategory("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                            <SheetFooter className="gap-2">
-                                <Button className="flex-1" onClick={handleFilterSearch} disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
+                    <div className="flex items-center gap-2 w-full lg:w-auto justify-between lg:justify-start">
+                        <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                                    <Filter className="h-4 w-4" />
                                 </Button>
-                                <SheetClose asChild>
-                                    <Button variant="outline" className="flex-1">Close</Button>
-                                </SheetClose>
-                            </SheetFooter>
-                        </SheetContent>
-                    </Sheet>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                                <SheetHeader>
+                                    <SheetTitle>Filter Samples</SheetTitle>
+                                    <SheetDescription>
+                                        Apply filters to narrow down the sample list.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="py-6 px-6 space-y-6">
+                                    {/* Weight Filter */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Label>Weight Range</Label>
+                                            <span className="text-xs text-muted-foreground">{weightRange[0]} - {weightRange[1]}</span>
+                                        </div>
+                                        <Slider
+                                            value={weightRange}
+                                            min={0}
+                                            max={2000}
+                                            step={10}
+                                            onValueChange={(val: any) => setWeightRange(val)}
+                                            className="py-2"
+                                        />
+                                    </div>
 
-                    {/* Sort By Dropdown */}
-                    {/* Sort By Dropdown */}
-                    <div className="relative">
-                        <Select value={ordering} onValueChange={setOrdering}>
-                            <SelectTrigger className="w-[180px] pr-8">
-                                <SelectValue placeholder="Sort By" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {SORT_OPTIONS.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {ordering && (
-                            <X
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setOrdering("")
-                                }}
-                            />
-                        )}
+                                    {/* Size Filter */}
+                                    <div className="space-y-3">
+                                        <Label className="block">Size Type</Label>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="size-letter"
+                                                    checked={sizeType === 'letter'}
+                                                    onCheckedChange={() => setSizeType(sizeType === 'letter' ? null : 'letter')}
+                                                />
+                                                <Label htmlFor="size-letter" className="cursor-pointer">Letter Size</Label>
+                                            </div>
+                                            {sizeType === 'letter' && (
+                                                <div className="relative">
+                                                    <Select value={letterSize} onValueChange={setLetterSize}>
+                                                        <SelectTrigger className="w-full mt-1 pr-8">
+                                                            <SelectValue placeholder="Select size" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {LETTER_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {letterSize && (
+                                                        <X
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                setLetterSize("")
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center space-x-2 mt-2">
+                                                <Checkbox
+                                                    id="size-cen"
+                                                    checked={sizeType === 'centimeter'}
+                                                    onCheckedChange={() => setSizeType(sizeType === 'centimeter' ? null : 'centimeter')}
+                                                />
+                                                <Label htmlFor="size-cen" className="cursor-pointer">Centimeter Size</Label>
+                                            </div>
+                                            {sizeType === 'centimeter' && (
+                                                <div className="pt-2 pl-6">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <Label className="text-xs text-muted-foreground">Range ({centimeterRange[0]} - {centimeterRange[1]})</Label>
+                                                    </div>
+                                                    <Slider
+                                                        value={centimeterRange}
+                                                        min={0}
+                                                        max={200}
+                                                        step={1}
+                                                        onValueChange={(val: any) => setCentimeterRange(val)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Color Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Color</Label>
+                                        <div className="relative">
+                                            <Select value={selectedColor} onValueChange={setSelectedColor}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select color" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Colors</SelectItem>
+                                                    {FILTER_COLORS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {selectedColor && selectedColor !== "all" && (
+                                                <X
+                                                    className="absolute left-29 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setSelectedColor("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Sample Type Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Sample Type</Label>
+                                        <div className="relative">
+                                            <Select value={sampleType} onValueChange={setSampleType}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Types</SelectItem>
+                                                    {FILTER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {sampleType && sampleType !== "all" && (
+                                                <X
+                                                    className="absolute left-46 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setSampleType("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Buyer Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Buyer</Label>
+                                        <div className="relative">
+                                            <Select value={selectedBuyer} onValueChange={setSelectedBuyer}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select buyer" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Buyers</SelectItem>
+                                                    {buyers.map(b => <SelectItem key={b.uid} value={b.uid}>{b.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {selectedBuyer && selectedBuyer !== "all" && (
+                                                <X
+                                                    className="absolute left-27 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setSelectedBuyer("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Project Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Project</Label>
+                                        <div className="relative">
+                                            <Select value={selectedProject} onValueChange={setSelectedProject}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select project" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Projects</SelectItem>
+                                                    {projects.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {selectedProject && selectedProject !== "all" && (
+                                                <X
+                                                    className="absolute left-32 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setSelectedProject("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Category Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Category</Label>
+                                        <div className="relative">
+                                            <Select value={category} onValueChange={setCategory}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select category" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Categories</SelectItem>
+                                                    {FILTER_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {category && category !== "all" && (
+                                                <X
+                                                    className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setCategory("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Sub Category Filter */}
+                                    <div className="space-y-3">
+                                        <Label>Sub Category</Label>
+                                        <div className="relative">
+                                            <Select value={subCategory} onValueChange={setSubCategory}>
+                                                <SelectTrigger className="pr-8">
+                                                    <SelectValue placeholder="Select sub category" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Sub Categories</SelectItem>
+                                                    {FILTER_SUB_CATEGORIES.map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            {subCategory && subCategory !== "all" && (
+                                                <X
+                                                    className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setSubCategory("all")
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <SheetFooter className="gap-2">
+                                    <Button className="flex-1" onClick={handleFilterSearch} disabled={isLoading}>
+                                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
+                                    </Button>
+                                    <SheetClose asChild>
+                                        <Button variant="outline" className="flex-1">Close</Button>
+                                    </SheetClose>
+                                </SheetFooter>
+                            </SheetContent>
+                        </Sheet>
+
+                        {/* Sort By Dropdown */}
+                        {/* Sort By Dropdown */}
+                        <div className="relative">
+                            <Select value={ordering} onValueChange={setOrdering}>
+                                <SelectTrigger className="w-[180px] pr-8">
+                                    <SelectValue placeholder="Sort By" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SORT_OPTIONS.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {ordering && (
+                                <X
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setOrdering("")
+                                    }}
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1415,7 +1417,7 @@ export default function SpacePage() {
             ) : (
                 <>
 
-                {samples.length > 0 && (
+                    {samples.length > 0 && (
                         <div className="mb-12">
                             <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -2164,9 +2166,9 @@ export default function SpacePage() {
                                 ) : (
                                     <>
 
-                                    {sampleDetails.storage.name && (
-                                           
-                                                <button className="flex flex-row gap-2 border-2 border-grey p-3"><Folder />{sampleDetails.storage.name}</button>
+                                        {sampleDetails.storage.name && (
+
+                                            <button className="flex flex-row gap-2 border-2 border-grey p-3"><Folder />{sampleDetails.storage.name}</button>
                                         )}
                                         {/* Images Section */}
                                         {sampleDetails.images && sampleDetails.images.length > 0 && (
