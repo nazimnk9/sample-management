@@ -127,7 +127,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter buyer name"
-//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
 //                   />
 //                 </div>
 
@@ -161,7 +161,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter street address"
-//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
 //                   />
 //                 </div>
 
@@ -175,7 +175,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter city"
-//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
 //                   />
 //                 </div>
 
@@ -189,7 +189,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter state"
-//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
 //                   />
 //                 </div>
 
@@ -203,7 +203,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter country"
-//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+//                     className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
 //                   />
 //                 </div>
 //               </div>
@@ -428,7 +428,7 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter buyer name"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -444,7 +444,11 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     disabled={companiesLoading}
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground ${
+                        formData.company_uid
+                          ? "text-foreground"
+                          : "text-foreground/50"
+                      } focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
                       fieldErrors.company_uid ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   >
@@ -468,7 +472,7 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter street address"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.street ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -485,7 +489,7 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter city"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.city ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -502,7 +506,7 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter state"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.state ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -519,7 +523,7 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter country"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.country ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />

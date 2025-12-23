@@ -135,7 +135,7 @@ export default function AddDrawerPage() {
                                     onChange={handleChange}
                                     required
                                     placeholder="Enter drawer name"
-                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                                         }`}
                                 />
                                 {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name[0]}</p>}
@@ -149,7 +149,7 @@ export default function AddDrawerPage() {
                                     value={formData.description}
                                     onChange={handleChange}
                                     placeholder="Enter drawer description"
-                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.description ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.description ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                                         }`}
                                     rows={4}
                                 />

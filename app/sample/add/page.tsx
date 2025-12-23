@@ -406,7 +406,7 @@ export default function AddSamplePage() {
                       onChange={handleChange}
                       required
                       placeholder="Enter sample name"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                     {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name[0]}</p>}
@@ -420,7 +420,7 @@ export default function AddSamplePage() {
                       value={formData.description}
                       onChange={handleChange}
                       placeholder="Enter sample description"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.description
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.description
                         ? "border-red-500 focus:ring-red-500"
                         : "border-border focus:ring-primary"
                         }`}
@@ -440,7 +440,7 @@ export default function AddSamplePage() {
                       value={formData.style_no}
                       onChange={handleChange}
                       placeholder="e.g., ST-2025-001"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.style_no ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.style_no ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
@@ -454,7 +454,7 @@ export default function AddSamplePage() {
                       value={formData.sku_no}
                       onChange={handleChange}
                       placeholder="e.g., SKU-8899"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.sku_no ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.sku_no ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
@@ -515,7 +515,7 @@ export default function AddSamplePage() {
                       value={formData.color}
                       onChange={handleChange}
                       placeholder="e.g., Black"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div> */}
@@ -559,7 +559,7 @@ export default function AddSamplePage() {
                         value={formData.size}
                         onChange={handleChange}
                         placeholder="e.g., 20"
-                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                           }`}
                       />
                     )}
@@ -573,7 +573,7 @@ export default function AddSamplePage() {
                       value={formData.color}
                       onChange={handleChange}
                       placeholder="e.g., Black"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
@@ -587,7 +587,7 @@ export default function AddSamplePage() {
                       value={formData.size}
                       onChange={handleChange}
                       placeholder="e.g., M"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div> */}
@@ -607,7 +607,7 @@ export default function AddSamplePage() {
                       value={formData.fabrication}
                       onChange={handleChange}
                       placeholder="e.g., 100% Cotton"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.fabrication
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.fabrication
                         ? "border-red-500 focus:ring-red-500"
                         : "border-border focus:ring-primary"
                         }`}
@@ -623,7 +623,7 @@ export default function AddSamplePage() {
                       value={formData.weight}
                       onChange={handleChange}
                       placeholder="e.g., 180"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.weight ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.weight ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
@@ -687,7 +687,7 @@ export default function AddSamplePage() {
                       value={formData.comments}
                       onChange={handleChange}
                       placeholder="Enter any additional comments"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.comments ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.comments ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                       rows={2}
                     />
@@ -711,7 +711,7 @@ export default function AddSamplePage() {
                             }`}
                         >
                           <span
-                            className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}
+                            className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground/50"}
                           >
                             {formData.buyer_uids.length > 0
                               ? `${formData.buyer_uids.length} buyer(s) selected`
@@ -751,7 +751,7 @@ export default function AddSamplePage() {
                             }`}
                         >
                           <span
-                            className={formData.project_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}
+                            className={formData.project_uids.length > 0 ? "text-foreground" : "text-muted-foreground/50"}
                           >
                             {formData.project_uids.length > 0
                               ? `${formData.project_uids.length} project(s) selected`
@@ -790,7 +790,7 @@ export default function AddSamplePage() {
                             : "border-border focus:ring-primary"
                             }`}
                         >
-                          <span className={formData.note_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}>
+                          <span className={formData.note_uids.length > 0 ? "text-foreground" : "text-muted-foreground/50"}>
                             {formData.note_uids.length > 0
                               ? `${formData.note_uids.length} note(s) selected`
                               : "Select notes..."}

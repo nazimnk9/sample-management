@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, CreditCard as Edit2, FolderOpen, ChevronLeft, X, Loader2, MoreVertical, Upload, RectangleHorizontal, Search } from "lucide-react"
+import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, ChevronRight, X, Loader2, MoreVertical, Upload, RectangleHorizontal, Search } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
 import { apiCall, getCookie } from "@/lib/auth-utils"
@@ -16,8 +16,9 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuCheckboxItem,
+    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Filter } from "lucide-react"
+import { ChevronDown, Filter, Eye } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import {
     Sheet,
@@ -249,7 +250,7 @@ function SampleImageUploadModal({ isOpen, onClose, existingImages, onImagesUploa
                                 <span>{isUploading ? "Uploading..." : "Select Images"}</span>
                             </Button>
                         </label>
-                        <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p>
+                        {/* <p className="text-xs text-muted-foreground mt-2">Images will be auto-compressed to under 999KB</p> */}
                     </div>
 
                     {uploadedImages.length > 0 && (
@@ -265,7 +266,7 @@ function SampleImageUploadModal({ isOpen, onClose, existingImages, onImagesUploa
                                         />
                                         <button
                                             onClick={() => handleRemoveImage(img.uid)}
-                                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-100 group-hover:opacity-100 transition"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -298,6 +299,30 @@ export default function SpacePage() {
     const urlCurrentParentUid = searchParams.get("currentParentUid")
 
     const [spaces, setSpaces] = useState<Space[]>([])
+    const [spacePreviewModal, setSpacePreviewModal] = useState(false)
+    const [previewSpace, setPreviewSpace] = useState<Space | null>(null)
+    const [previewLoading, setPreviewLoading] = useState(false)
+
+    const handlePreviewClick = async (space: Space, e: React.MouseEvent) => {
+        e.stopPropagation()
+        setPreviewLoading(true)
+        setSpacePreviewModal(true)
+        try {
+            const response = await apiCall(`/sample_manager/storage/${space.uid}`)
+            if (response.ok) {
+                const data = await response.json()
+                setPreviewSpace(data)
+            } else {
+                toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+                setSpacePreviewModal(false)
+            }
+        } catch (err) {
+            toast({ title: "Error", description: "Failed to load space details", variant: "destructive" })
+            setSpacePreviewModal(false)
+        } finally {
+            setPreviewLoading(false)
+        }
+    }
     const [samples, setSamples] = useState<Sample[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [parentStack, setParentStack] = useState<Array<{ uid: string; name: string }>>([])
@@ -824,6 +849,31 @@ export default function SpacePage() {
         }
     }
 
+    // Image Viewer State and Handlers
+    const [imageViewOpen, setImageViewOpen] = useState(false)
+    const [viewImages, setViewImages] = useState<any[]>([])
+    const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+    const handleImageClick = (index: number, images: any[]) => {
+        setViewImages(images)
+        setCurrentImageIndex(index)
+        setImageViewOpen(true)
+    }
+
+    const handleCloseImageViewer = () => {
+        setImageViewOpen(false)
+        setViewImages([])
+        setCurrentImageIndex(0)
+    }
+
+    const handleNextImage = () => {
+        setCurrentImageIndex((prev) => (prev + 1) % viewImages.length)
+    }
+
+    const handlePrevImage = () => {
+        setCurrentImageIndex((prev) => (prev - 1 + viewImages.length) % viewImages.length)
+    }
+
     const FILTER_COLORS = ["AOP", "ARMY", "AVIO", "BLACK", "BLUE", "BROWN", "CAMEL", "CHARCOAL", "CREAM", "DENIM", "GOLD", "GREY", "GREEN", "KHAKI", "MULTI", "NAVY", "OFF WHITE", "OLIVE", "ORANGE", "PINK", "PURPLE", "RED", "ROSE", "RUST", "SILVER", "STONE", "TAN", "TAUPE", "TEAL", "WHITE", "YELLOW"]
     const FILTER_TYPES = ["DEVELOPMENT", "SALESMAN", "STYLING", "TOP OF PRODUCTION", "PRE-PRODUCTION", "SMS", "VINTAGE"]
     const FILTER_CATEGORIES = ["CIRCULAR_KNIT", "FLAT_KNIT", "WOVEN"]
@@ -990,7 +1040,7 @@ export default function SpacePage() {
                             onFocus={() => {
                                 if (searchQuery) setShowSearchDropdown(true)
                             }}
-                            className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         />
 
                         {/* Search Filter List Dropdown */}
@@ -1036,9 +1086,9 @@ export default function SpacePage() {
                                                         className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
                                                     >
                                                         <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
-                                                            {sample.image ? (
+                                                            {sample.images && sample.images.length > 0 ? (
                                                                 <img
-                                                                    src={sample.image}
+                                                                    src={sample.images[0].file}
                                                                     alt={sample.name}
                                                                     className="w-full h-full object-fixed"
                                                                 />
@@ -1368,80 +1418,48 @@ export default function SpacePage() {
                     {spaces.length > 0 && (
                         <div>
                             <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
                                 {spaces.map((space) => (
                                     <Card
                                         key={space.uid}
-                                        className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer group"
+                                        className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200"
                                     >
-                                        <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSpaceCardClick(space)}>
-                                            {space.image ? (
+                                        <div className="relative overflow-hidden">
+                                            <div onClick={() => handleSpaceCardClick(space)} className="w-full h-full cursor-pointer">
                                                 <img
-                                                    src={space.image || "/placeholder.svg"}
+                                                    src="/space.png"
                                                     alt={space.name}
-                                                    className="w-full h-full object-fixed group-hover:scale-105 transition-transform"
+                                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                                                 />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-muted">
-                                                    <FolderOpen className="w-12 h-12 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                            <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-lg">
-                                                <FolderOpen className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="p-2 hover:bg-black/20 rounded-full transition text-black cursor-pointer">
+                                                            <MoreVertical className="w-5 h-5" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={(e) => handlePreviewClick(space, e)} className="cursor-pointer">
+                                                            <Eye className="w-4 h-4 mr-2 cursor-pointer" />
+                                                            Preview
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditClick(space); }} className="cursor-pointer">
+                                                            <Edit2 className="w-4 h-4 mr-2 cursor-pointer" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(space); }} className="text-red-600 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </div>
 
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-base sm:text-lg line-clamp-1">{space.name}</CardTitle>
+                                        <CardHeader className="pb-4 pt-2">
+                                            <CardTitle className="text-base sm:text-lg line-clamp-1 text-center">{space.name}</CardTitle>
                                         </CardHeader>
-
-                                        <CardContent>
-                                            <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                                                {space.description || "No description"}
-                                            </p>
-
-                                            <div className="relative mb-4">
-                                                {menuOpen === space.uid && (
-                                                    <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
-                                                        <button
-                                                            onClick={() => handleEditClick(space)}
-                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
-                                                        >
-                                                            <Edit2 className="w-4 h-4" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteClick(space)}
-                                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-2 pt-4 border-t border-border">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
-                                                    onClick={() => handleEditClick(space)}
-                                                >
-                                                    <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
-                                                    onClick={() => handleDeleteClick(space)}
-                                                >
-                                                    <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
-                                                    Delete
-                                                </Button>
-                                            </div>
-                                        </CardContent>
                                     </Card>
                                 ))}
                             </div>
@@ -1451,16 +1469,38 @@ export default function SpacePage() {
                     {samples.length > 0 && (
                         <div>
                             <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                                 {samples.map((sample) => (
-                                    <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden cursor-pointer"
-                                    >
-                                        <div className="relative h-48 bg-muted overflow-hidden" onClick={() => handleSampleDetailsClick(sample)}>
+                                    <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200">
+                                        <div className="flex items-center justify-between p-3 border-b border-primary">
+                                            <h3 className="font-semibold text-sm sm:text-base line-clamp-1" title={sample.name}>{sample.name}</h3>
+                                            <div onClick={(e) => e.stopPropagation()}>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="p-1.5 hover:bg-muted rounded-full transition text-muted-foreground cursor-pointer">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => handleSampleEditClick(sample)} className="cursor-pointer">
+                                                            <Edit2 className="w-4 h-4 mr-2" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleSampleDeleteClick(sample)} className="text-red-600 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative overflow-hidden cursor-pointer" onClick={() => handleSampleDetailsClick(sample)}>
                                             {sample.images && sample.images.length > 0 ? (
                                                 <img
                                                     src={sample.images[0].file || "/placeholder.svg"}
                                                     alt={sample.name}
-                                                    className="w-full h-full object-fixed hover:scale-105 transition-transform"
+                                                    className="w-full h-full object-contain hover:scale-105 transition-transform"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -1468,58 +1508,6 @@ export default function SpacePage() {
                                                 </div>
                                             )}
                                         </div>
-
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-base sm:text-lg line-clamp-1">{sample.name}</CardTitle>
-                                        </CardHeader>
-
-                                        <CardContent>
-                                            <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                                                {sample.description || "No description"}
-                                            </p>
-
-                                            <div className="relative mb-4">
-                                                {sampleMenuOpen === sample.uid && (
-                                                    <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg z-10">
-                                                        <button
-                                                            onClick={() => handleSampleEditClick(sample)}
-                                                            className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2"
-                                                        >
-                                                            <Edit2 className="w-4 h-4" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleSampleDeleteClick(sample)}
-                                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-2 pt-4 border-t border-border">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="flex-1 flex items-center justify-center gap-1 bg-transparent text-xs sm:text-sm"
-                                                    onClick={() => handleSampleEditClick(sample)}
-                                                >
-                                                    <Edit2 className="w-3 sm:w-4 h-3 sm:h-4" />
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="flex-1 flex items-center justify-center gap-1 text-destructive hover:bg-red-50 bg-transparent text-xs sm:text-sm"
-                                                    onClick={() => handleSampleDeleteClick(sample)}
-                                                >
-                                                    <Trash2 className="w-3 sm:w-4 h-3 sm:h-4" />
-                                                    Delete
-                                                </Button>
-                                            </div>
-                                        </CardContent>
                                     </Card>
                                 ))}
                             </div>
@@ -1617,6 +1605,49 @@ export default function SpacePage() {
                                         <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setEditModal(false)}>
                                             Cancel
                                         </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
+
+
+            {
+                spacePreviewModal && previewSpace && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-lg border-border max-h-[90vh] overflow-y-auto">
+                            <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+                                <CardTitle className="text-lg sm:text-xl">Space Preview</CardTitle>
+                                <button onClick={() => setSpacePreviewModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="space-y-4">
+                                    <div className="h-full w-full overflow-hidden">
+                                        <img
+                                            src={previewSpace.image || "/placeholder.svg"}
+                                            alt={previewSpace.name}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold pt-2">{previewSpace.name}</h3>
+                                        <p className="text-sm text-muted-foreground pt-4">{previewSpace.description || "No description provided."}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 text-sm pt-2">
+                                        <div>
+                                            <span className="font-medium">Type:</span> {previewSpace.type}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">Status:</span> {previewSpace.status}
+                                        </div>
+                                        {/* Add more fields if needed */}
+                                    </div>
+                                    <div className="flex justify-end pt-4">
+                                        <Button onClick={() => setSpacePreviewModal(false)}>Close</Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -2024,7 +2055,7 @@ export default function SpacePage() {
                                             </Button>
                                         </div>
 
-                                        {sampleEditImages.length > 0 && (
+                                        {/* {sampleEditImages.length > 0 && (
                                             <div>
                                                 <label className="text-sm font-medium text-foreground block mb-2">
                                                     Current Images ({sampleEditImages.length})
@@ -2048,7 +2079,7 @@ export default function SpacePage() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        )}
+                                        )} */}
 
                                         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
                                             <Button
@@ -2092,11 +2123,37 @@ export default function SpacePage() {
                 sampleDetailsModal && sampleDetails && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                         <Card className="w-full max-w-2xl border-border max-h-[90vh] overflow-y-auto">
-                            <CardHeader className="flex items-center justify-between border-b border-border pb-3 sticky top-0 bg-background">
+                            <CardHeader className="flex items-center justify-between border-b border-border pb-3 sticky top-0 bg-background z-20">
                                 <CardTitle className="text-lg sm:text-xl">{sampleDetails.name}</CardTitle>
-                                <button onClick={() => setSampleDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
-                                    <X className="w-5 h-5" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="gap-2"
+                                        onClick={() => {
+                                            setSampleDetailsModal(false)
+                                            handleSampleEditClick(sampleDetails)
+                                        }}
+                                    >
+                                        <Edit2 className="w-4 h-4" />
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="gap-2"
+                                        onClick={() => {
+                                            setSampleDetailsModal(false)
+                                            handleSampleDeleteClick(sampleDetails)
+                                        }}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Delete
+                                    </Button>
+                                    <button onClick={() => setSampleDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0 ml-2">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </CardHeader>
 
                             <CardContent className="pt-4 space-y-4">
@@ -2111,12 +2168,13 @@ export default function SpacePage() {
                                             <div>
                                                 <h3 className="font-semibold text-foreground mb-2">Images</h3>
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                                    {sampleDetails.images.map((image: any) => (
+                                                    {sampleDetails.images.map((image: any, index: number) => (
                                                         <img
                                                             key={image.uid}
                                                             src={image.file || "/placeholder.svg"}
                                                             alt={image.file_name}
-                                                            className="w-full h-32 object-fixed rounded border border-border"
+                                                            onClick={() => handleImageClick(index, sampleDetails.images)}
+                                                            className="w-full h-32 object-fixed rounded border border-border cursor-pointer hover:opacity-90 transition"
                                                         />
                                                     ))}
                                                 </div>
@@ -2262,50 +2320,6 @@ export default function SpacePage() {
                 )
             }
 
-            {/* Delete Confirmation Modals */}
-            {
-                deleteConfirmModal && selectedSpace && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <Card className="w-full max-w-md border-border">
-                            <CardHeader className="flex items-center justify-between border-b border-border pb-3">
-                                <CardTitle className="text-lg">Delete Space</CardTitle>
-                                <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <p className="text-sm text-foreground mb-6">
-                                    Are you sure you want to delete space "{selectedSpace.name}"? This action cannot be undone.
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                    <Button
-                                        onClick={handleConfirmDelete}
-                                        disabled={isDeleting}
-                                        className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
-                                    >
-                                        {isDeleting ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Deleting...
-                                            </>
-                                        ) : (
-                                            "Delete"
-                                        )}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1 bg-transparent"
-                                        onClick={() => setDeleteConfirmModal(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )
-            }
-
             {
                 sampleDeleteConfirmModal && selectedSample && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -2348,6 +2362,57 @@ export default function SpacePage() {
                                 </div>
                             </CardContent>
                         </Card>
+                    </div>
+                )
+            }
+
+            {/* Image Viewer Modal */}
+            {
+                imageViewOpen && viewImages.length > 0 && (
+                    <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+                        <button
+                            onClick={handleCloseImageViewer}
+                            className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition z-[70]"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            {viewImages.length > 1 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handlePrevImage()
+                                    }}
+                                    className="absolute left-2 md:left-8 text-white p-2 hover:bg-white/10 rounded-full transition z-[70]"
+                                >
+                                    <ChevronLeft className="w-10 h-10" />
+                                </button>
+                            )}
+
+                            <div className="max-w-[90vw] max-h-[90vh] relative">
+                                <img
+                                    src={viewImages[currentImageIndex].file || "/placeholder.svg"}
+                                    alt="Full view"
+                                    className="max-w-full max-h-[90vh] object-contain"
+                                />
+                                <div className="absolute bottom-[-40px] left-1/2 transform -translate-x-1/2 text-white text-sm">
+                                    {currentImageIndex + 1} / {viewImages.length}
+                                </div>
+                            </div>
+
+                            {viewImages.length > 1 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleNextImage()
+                                    }}
+                                    className="absolute right-2 md:right-8 text-white p-2 hover:bg-white/10 rounded-full transition z-[70]"
+                                >
+                                    <ChevronRight className="w-10 h-10" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )
             }

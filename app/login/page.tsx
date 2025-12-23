@@ -80,7 +80,7 @@
 //                   value={email}
 //                   onChange={(e) => setEmail(e.target.value)}
 //                   required
-//                   className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+//                   className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
 //                 />
 //               </div>
 //             </div>
@@ -96,7 +96,7 @@
 //                   value={password}
 //                   onChange={(e) => setPassword(e.target.value)}
 //                   required
-//                   className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+//                   className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
 //                 />
 //               </div>
 //             </div>
@@ -260,7 +260,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   //required
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                     fieldErrors.email ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                   }`}
                 />
@@ -284,7 +284,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   //required
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                     fieldErrors.password ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                   }`}
                 />

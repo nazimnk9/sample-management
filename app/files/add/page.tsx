@@ -323,7 +323,7 @@ export default function AddFilePage() {
                                         onChange={handleChange}
                                         required
                                         placeholder="File name"
-                                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                                             }`}
                                     />
                                     {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name[0]}</p>}
@@ -338,7 +338,7 @@ export default function AddFilePage() {
                                         value={formData.file_id}
                                         onChange={handleChange}
                                         placeholder="File ID"
-                                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.file_id ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.file_id ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                                             }`}
                                     />
                                     {fieldErrors.file_id && <p className="text-sm text-red-600 mt-1">{fieldErrors.file_id[0]}</p>}
@@ -353,7 +353,7 @@ export default function AddFilePage() {
                                     value={formData.comments}
                                     onChange={handleChange}
                                     placeholder="Additional comments"
-                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.comments ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.comments ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                                         }`}
                                     rows={3}
                                 />

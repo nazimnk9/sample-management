@@ -130,7 +130,11 @@ export default function AddNotePage() {
                   onChange={handleChange}
                   required
                   disabled={companiesLoading}
-                  className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
+                  className={`w-full px-4 py-2.5 border rounded-lg bg-card ${
+                        formData.company_uid
+                          ? "text-foreground"
+                          : "text-foreground/50"
+                      } focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
                     fieldErrors.company_uid ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                   }`}
                 >
@@ -153,7 +157,7 @@ export default function AddNotePage() {
                   onChange={handleChange}
                   required
                   placeholder="Enter note title"
-                  className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                  className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                     fieldErrors.title ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                   }`}
                 />
@@ -169,7 +173,7 @@ export default function AddNotePage() {
                   required
                   placeholder="Enter note description"
                   rows={6}
-                  className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${
+                  className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${
                     fieldErrors.description ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                   }`}
                 />

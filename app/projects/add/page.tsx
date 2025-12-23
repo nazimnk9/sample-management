@@ -301,7 +301,7 @@
 //                   value={formData.name}
 //                   onChange={handleInputChange}
 //                   placeholder="Enter project name"
-//                   className={`w-full px-4 py-2 text-sm border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
+//                   className={`w-full px-4 py-2 text-sm border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary ${
 //                     fieldErrors.name ? "border-red-500" : "border-border"
 //                   }`}
 //                 />
@@ -931,7 +931,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter project name"
-//                     className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+//                     className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
 //                       fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
 //                     }`}
 //                   />
@@ -1495,7 +1495,7 @@
 //                     onChange={handleChange}
 //                     required
 //                     placeholder="Enter project name"
-//                     className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+//                     className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
 //                       fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
 //                     }`}
 //                   />
@@ -2108,7 +2108,7 @@ export default function AddProjectPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter project name"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -2161,7 +2161,11 @@ export default function AddProjectPage() {
                       onChange={handleChange}
                       required
                       disabled={companiesLoading}
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card ${
+                        formData.company_uid
+                          ? "text-foreground"
+                          : "text-foreground/50"
+                      } focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
                         fieldErrors.company_uid
                           ? "border-red-500 focus:ring-red-500"
                           : "border-border focus:ring-primary"
@@ -2169,7 +2173,7 @@ export default function AddProjectPage() {
                     >
                       <option value="">{companiesLoading ? "Loading companies..." : "Select a company"}</option>
                       {companies.map((company) => (
-                        <option key={company.uid} value={company.uid}>
+                        <option key={company.uid} value={company.uid} className="text-foreground">
                           {company.name}
                         </option>
                       ))}
@@ -2193,7 +2197,7 @@ export default function AddProjectPage() {
                             : "border-border focus:ring-primary"
                         }`}
                       >
-                        <span className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}>
+                        <span className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground/50"}>
                           {formData.buyer_uids.length > 0
                             ? `${formData.buyer_uids.length} buyer(s) selected`
                             : "Select buyers..."}

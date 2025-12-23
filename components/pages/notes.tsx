@@ -257,7 +257,7 @@ export default function Notes() {
             placeholder="Search notes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-sm"
+            className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none text-sm"
           />
         </div>
       </div>
@@ -276,7 +276,7 @@ export default function Notes() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredNotes.map((note) => (
-            <Card key={note.uid} className="border-border hover:shadow-lg transition-all relative">
+            <Card key={note.uid} className="border-border hover:shadow-lg transition-all relative bg-gray-200">
               <div className="absolute top-3 right-3 z-10">
                 <button
                   onClick={() => setMenuOpen(menuOpen === note.uid ? null : note.uid)}
@@ -301,26 +301,26 @@ export default function Notes() {
                 )}
               </div>
 
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-base sm:text-lg line-clamp-2">{note.title}</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <div>
+                <div className="pb-2">
                   <p className="text-xs text-muted-foreground mb-1">Company</p>
                   <p className="text-sm font-medium text-foreground">{note.company?.name || "N/A"}</p>
                 </div>
 
-                <div>
+                <div className="pb-2">
                   <p className="text-xs text-muted-foreground mb-1">Description</p>
                   <p className="text-sm text-foreground line-clamp-2">{note.description}</p>
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-4 border-t border-primary">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-transparent text-xs sm:text-sm"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
                     onClick={() => {
                       setSelectedNote(note)
                       setDetailsModal(true)
@@ -332,7 +332,7 @@ export default function Notes() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-transparent text-xs sm:text-sm"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
                     onClick={() => handleSettingsClick(note)}
                   >
                     <SettingsIcon className="w-3 sm:w-4 h-3 sm:h-4" />
@@ -422,7 +422,7 @@ export default function Notes() {
                     onChange={handleChange}
                     required
                     placeholder="Enter note title"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
                       fieldErrors.title ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
@@ -438,7 +438,7 @@ export default function Notes() {
                     required
                     placeholder="Enter note description"
                     rows={4}
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${
                       fieldErrors.description ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                     }`}
                   />
