@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, ChevronRight, X, Loader2, MoreVertical, Upload, RectangleHorizontal, Search } from "lucide-react"
+import { Plus, Trash2, Edit2, FolderOpen, ChevronLeft, ChevronRight, X, Loader2, MoreVertical, Upload, RectangleHorizontal, Search, Folder } from "lucide-react"
 
 import { useToast } from "@/hooks/use-toast"
 import { apiCall, getCookie } from "@/lib/auth-utils"
@@ -1414,64 +1414,13 @@ export default function SpacePage() {
                 </div>
             ) : (
                 <>
-                    {/* Spaces Grid */}
-                    {spaces.length > 0 && (
-                        <div>
-                            <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-                                {spaces.map((space) => (
-                                    <Card
-                                        key={space.uid}
-                                        className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200"
-                                    >
-                                        <div className="relative overflow-hidden">
-                                            <div onClick={() => handleSpaceCardClick(space)} className="w-full h-full cursor-pointer">
-                                                <img
-                                                    src="/space.png"
-                                                    alt={space.name}
-                                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                                                />
-                                            </div>
-                                            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <button className="p-2 hover:bg-black/20 rounded-full transition text-black cursor-pointer">
-                                                            <MoreVertical className="w-5 h-5" />
-                                                        </button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={(e) => handlePreviewClick(space, e)} className="cursor-pointer">
-                                                            <Eye className="w-4 h-4 mr-2 cursor-pointer" />
-                                                            Preview
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditClick(space); }} className="cursor-pointer">
-                                                            <Edit2 className="w-4 h-4 mr-2 cursor-pointer" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(space); }} className="text-red-600 cursor-pointer">
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        </div>
 
-                                        <CardHeader className="pb-4 pt-2">
-                                            <CardTitle className="text-base sm:text-lg line-clamp-1 text-center">{space.name}</CardTitle>
-                                        </CardHeader>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {samples.length > 0 && (
-                        <div>
+                {samples.length > 0 && (
+                        <div className="mb-12">
                             <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                                 {samples.map((sample) => (
-                                    <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200">
+                                    <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200 border-1 border-black/20">
                                         <div className="flex items-center justify-between p-3 border-b border-primary">
                                             <h3 className="font-semibold text-sm sm:text-base line-clamp-1" title={sample.name}>{sample.name}</h3>
                                             <div onClick={(e) => e.stopPropagation()}>
@@ -1508,6 +1457,57 @@ export default function SpacePage() {
                                                 </div>
                                             )}
                                         </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {/* Spaces Grid */}
+                    {spaces.length > 0 && (
+                        <div>
+                            <h2 className="text-lg font-semibold text-foreground mb-4">Spaces</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                                {spaces.map((space) => (
+                                    <Card
+                                        key={space.uid}
+                                        className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200 border-1 border-black/20"
+                                    >
+                                        <div className="relative overflow-hidden">
+                                            <div onClick={() => handleSpaceCardClick(space)} className="w-full h-full cursor-pointer flex justify-center items-center">
+                                                <img
+                                                    src="/space.png"
+                                                    alt={space.name}
+                                                    className="w-40 h-40 object-contain group-hover:scale-105 transition-transform"
+                                                />
+                                            </div>
+                                            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="p-2 hover:bg-black/20 rounded-full transition text-black cursor-pointer">
+                                                            <MoreVertical className="w-5 h-5" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={(e) => handlePreviewClick(space, e)} className="cursor-pointer">
+                                                            <Eye className="w-4 h-4 mr-2 cursor-pointer" />
+                                                            Preview
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditClick(space); }} className="cursor-pointer">
+                                                            <Edit2 className="w-4 h-4 mr-2 cursor-pointer" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(space); }} className="text-red-600 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </div>
+
+                                        <CardHeader className="pb-4 pt-2">
+                                            <CardTitle className="text-base sm:text-lg line-clamp-1 text-center">{space.name}</CardTitle>
+                                        </CardHeader>
                                     </Card>
                                 ))}
                             </div>
@@ -2048,7 +2048,7 @@ export default function SpacePage() {
                                             <Button
                                                 type="button"
                                                 onClick={() => setImageUploadOpen(true)}
-                                                className="w-full bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
+                                                className="cursor-pointer w-full bg-[#00FFFF] hover:bg-[#00FFFF] text-black flex items-center justify-center gap-2"
                                             >
                                                 <Upload className="w-4 h-4" />
                                                 Manage Images
@@ -2163,6 +2163,11 @@ export default function SpacePage() {
                                     </div>
                                 ) : (
                                     <>
+
+                                    {sampleDetails.storage.name && (
+                                           
+                                                <button className="flex flex-row gap-2 border-2 border-grey p-3"><Folder />{sampleDetails.storage.name}</button>
+                                        )}
                                         {/* Images Section */}
                                         {sampleDetails.images && sampleDetails.images.length > 0 && (
                                             <div>
