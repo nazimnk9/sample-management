@@ -1083,7 +1083,7 @@ export default function SpacePage() {
                                                     <div
                                                         key={sample.uid}
                                                         onClick={() => handleSearchSampleClick(sample)}
-                                                        className="p-2 border border-border bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
+                                                        className="p-2 border border-primary bg-card rounded hover:shadow-sm cursor-pointer flex items-center gap-2 transition-all"
                                                     >
                                                         <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
                                                             {sample.images && sample.images.length > 0 ? (
