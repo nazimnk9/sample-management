@@ -2156,7 +2156,7 @@ export default function SpacePage() {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="pt-4 space-y-4">
+                            <CardContent className="pt-1 space-y-4">
                                 {sampleDetailsLoading ? (
                                     <div className="flex items-center justify-center py-8">
                                         <div className="w-8 h-8 border-2 border-muted-foreground border-t-foreground rounded-full animate-spin"></div>
