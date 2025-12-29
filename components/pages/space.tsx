@@ -2261,6 +2261,10 @@ export default function SpacePage() {
                                                 <p className="text-foreground">{sampleDetails.types || "-"}</p>
                                             </div>
                                             <div>
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range</label>
+                                                <p className="text-foreground">{sampleDetails.size_range || "-"}</p>
+                                            </div>
+                                            <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Arrival Date</label>
                                                 <p className="text-foreground">
                                                     {sampleDetails.arrival_date ? new Date(sampleDetails.arrival_date).toLocaleDateString() : "-"}
