@@ -1141,7 +1141,7 @@ export default function SpacePage() {
                                             value={weightRange}
                                             min={0}
                                             max={2000}
-                                            step={10}
+                                            step={1}
                                             onValueChange={(val: any) => setWeightRange(val)}
                                             className="py-2"
                                         />
@@ -1156,7 +1156,7 @@ export default function SpacePage() {
                                         <Slider
                                             value={ageRange}
                                             min={0}
-                                            max={20}
+                                            max={100}
                                             step={1}
                                             onValueChange={(val: any) => setAgeRange(val)}
                                             className="py-2"
