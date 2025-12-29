@@ -712,6 +712,7 @@ export default function SpacePage() {
                 sub_category: sampleEditData.sub_category,
                 color: sampleEditData.color,
                 size: sampleEditData.size,
+                size_range: sampleEditData.size_range,
                 comments: sampleEditData.comments,
                 name: sampleEditData.name,
                 description: sampleEditData.description,
@@ -1889,6 +1890,17 @@ export default function SpacePage() {
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Age Range */}
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Age Range</label>
+                                                <input
+                                                    type="text"
+                                                    value={sampleEditData.size_range || ""}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size_range: e.target.value })}
+                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                />
+                                            </div>
 
                                         <div>
                                             <label className="text-sm font-medium text-foreground block mb-2">Comments</label>

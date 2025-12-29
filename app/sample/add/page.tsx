@@ -55,6 +55,7 @@ export default function AddSamplePage() {
     sub_category: "MENS",
     color: "",
     size: "",
+    size_range: "",
     comments: "",
     name: "",
     description: "",
@@ -574,6 +575,20 @@ export default function AddSamplePage() {
                       onChange={handleChange}
                       placeholder="e.g., Black"
                       className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.color ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                        }`}
+                    />
+                  </div>
+
+                  {/* Age Range */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">Age Range</label>
+                    <input
+                      type="text"
+                      name="size_range"
+                      value={formData.size_range}
+                      onChange={handleChange}
+                      placeholder="e.g., 4-10 Y"
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size_range ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
                   </div>
