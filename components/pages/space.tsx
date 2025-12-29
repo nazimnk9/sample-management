@@ -1855,6 +1855,7 @@ export default function SpacePage() {
                                                 >
                                                     <option value="GM">GM</option>
                                                     <option value="KG">KG</option>
+                                                    <option value="GSM">GSM</option>
                                                 </select>
                                             </div>
 
