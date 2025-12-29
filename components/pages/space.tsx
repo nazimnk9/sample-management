@@ -384,6 +384,7 @@ export default function SpacePage() {
 
     // Filter State
     const [weightRange, setWeightRange] = useState<[number, number]>([0, 2000])
+    const [ageRange, setAgeRange] = useState<[number, number]>([0, 100])
     const [sizeType, setSizeType] = useState<'letter' | 'centimeter' | null>(null)
     const [letterSize, setLetterSize] = useState<string>("")
     const [centimeterRange, setCentimeterRange] = useState<[number, number]>([0, 200])
@@ -899,6 +900,8 @@ export default function SpacePage() {
             // User requirement: "Two-Point Range Slider... weight_min, weight_max parameters"
             params.append("weight_min", weightRange[0].toString())
             params.append("weight_max", weightRange[1].toString())
+            params.append("age_range_min", ageRange[0].toString())
+            params.append("age_range_max", ageRange[1].toString())
 
             if (sizeType === 'letter' && letterSize) {
                 params.append("size", letterSize)
@@ -1140,6 +1143,22 @@ export default function SpacePage() {
                                             max={2000}
                                             step={10}
                                             onValueChange={(val: any) => setWeightRange(val)}
+                                            className="py-2"
+                                        />
+                                    </div>
+
+                                    {/* Age Range Filter */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Label>Age Range</Label>
+                                            <span className="text-xs text-muted-foreground">{ageRange[0]} - {ageRange[1]}</span>
+                                        </div>
+                                        <Slider
+                                            value={ageRange}
+                                            min={0}
+                                            max={20}
+                                            step={1}
+                                            onValueChange={(val: any) => setAgeRange(val)}
                                             className="py-2"
                                         />
                                     </div>
@@ -1893,15 +1912,15 @@ export default function SpacePage() {
                                         </div>
 
                                         {/* Age Range */}
-                                            <div>
-                                                <label className="text-sm font-medium text-foreground block mb-2">Age Range</label>
-                                                <input
-                                                    type="text"
-                                                    value={sampleEditData.size_range || ""}
-                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size_range: e.target.value })}
-                                                    className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                                />
-                                            </div>
+                                        <div>
+                                            <label className="text-sm font-medium text-foreground block mb-2">Age Range</label>
+                                            <input
+                                                type="text"
+                                                value={sampleEditData.size_range || ""}
+                                                onChange={(e) => setSampleEditData({ ...sampleEditData, size_range: e.target.value })}
+                                                className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                            />
+                                        </div>
 
                                         <div>
                                             <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
