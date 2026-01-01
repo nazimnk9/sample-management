@@ -904,6 +904,28 @@ export default function SpacePage() {
         { label: "Name for DSC", value: "-name" },
     ]
 
+    const LETTER_VALUE_TO_LABEL: { [key: number]: string } = {
+        1: "XXS",
+        2: "XS",
+        3: "S",
+        4: "M",
+        5: "L",
+        6: "XL",
+        7: "XXL",
+        8: "3XL",
+        9: "4XL",
+        10: "5XL"
+    }
+
+    const getLetterSizeLabel = (val: any) => {
+        if (!val) return ""
+        const numericVal = Number(val)
+        if (!isNaN(numericVal) && LETTER_VALUE_TO_LABEL[numericVal]) {
+            return LETTER_VALUE_TO_LABEL[numericVal]
+        }
+        return val
+    }
+
     const handleFilterSearch = async () => {
         setIsLoading(true)
         try {
@@ -1926,7 +1948,7 @@ export default function SpacePage() {
                                                     <div>
                                                         <label className="text-sm font-medium text-foreground block mb-2">Letter Range Min</label>
                                                         <select
-                                                            value={sampleEditData.letter_range_min || ""}
+                                                            value={getLetterSizeLabel(sampleEditData.letter_range_min) || ""}
                                                             onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_min: e.target.value })}
                                                             className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                         >
@@ -1939,7 +1961,7 @@ export default function SpacePage() {
                                                     <div>
                                                         <label className="text-sm font-medium text-foreground block mb-2">Letter Range Max</label>
                                                         <select
-                                                            value={sampleEditData.letter_range_max || ""}
+                                                            value={getLetterSizeLabel(sampleEditData.letter_range_max) || ""}
                                                             onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_max: e.target.value })}
                                                             className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                         >
@@ -2439,11 +2461,11 @@ export default function SpacePage() {
                                                 <>
                                                     <div>
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase">Letter Range Min</label>
-                                                        <p className="text-foreground">{sampleDetails.letter_range_min || "-"}</p>
+                                                        <p className="text-foreground">{getLetterSizeLabel(sampleDetails.letter_range_min) || "-"}</p>
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-semibold text-muted-foreground uppercase">Letter Range Max</label>
-                                                        <p className="text-foreground">{sampleDetails.letter_range_max || "-"}</p>
+                                                        <p className="text-foreground">{getLetterSizeLabel(sampleDetails.letter_range_max) || "-"}</p>
                                                     </div>
                                                 </>
                                             )}
