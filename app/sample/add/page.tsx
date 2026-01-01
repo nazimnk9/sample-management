@@ -49,12 +49,17 @@ export default function AddSamplePage() {
     fabrication: "",
     weight: "",
     weight_type: "GM",
-    size_type: "CENTIMETER",
+    size_range_type: "LETTER_RANGE",
+    letter_range_max: "",
+    letter_range_min: "",
+    age_range_year_max: "",
+    age_range_year_min: "",
+    age_range_month_max: "",
+    age_range_month_min: "",
     types: "DEVELOPMENT",
     category: "CIRCULAR_KNIT",
     sub_category: "MENS",
     color: "",
-    size: "",
     size_range: "",
     comments: "",
     name: "",
@@ -246,6 +251,19 @@ export default function AddSamplePage() {
 
       return { ...prev, ...updates }
     })
+
+    // Auto-update size_range text based on selection for display/search purposes if needed
+    // But user requirement specifically asked for individual fields in API.
+    // We will keep size_range field as it was in original code (user didn't ask to remove it explicitly, but maybe replace usage? 
+    // The user said "do not show 'Size Type' & 'Size' input field" 
+    // The user also mentioned `size_range` in the original state.
+    // I will leave `size_range` in state but maybe it's less relevant now, or used for "Age Range" input which was separate?
+    // Wait, line 583 in original code is "Age Range" label but name="size_range".
+    // "Age Range" input at 583 seems redundant if we have "Age Range Year/Month". 
+    // User request: 'do not show "Size Type" & "Size" input field...'.
+    // It didn't explicitly say remove "Age Range" input (name="size_range"), but the new fields "Age Range Year/Month" seem to replace the need for a manual text string.
+    // However, I will strictly follow "do not show 'Size Type' & 'Size'". 
+
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev }
@@ -310,10 +328,31 @@ export default function AddSamplePage() {
       const storedImageUids = localStorage.getItem("sample_image_uids")
       const imageUids = storedImageUids ? JSON.parse(storedImageUids) : []
 
-      const submitData = {
-        ...formData,
+      // Filter formData to only include relevant size range fields
+      const {
+        size_range_type,
+        letter_range_min, letter_range_max,
+        age_range_year_min, age_range_year_max,
+        age_range_month_min, age_range_month_max,
+        ...otherFormData
+      } = formData;
+
+      const submitData: any = {
+        ...otherFormData,
+        size_range_type,
         storage_uid: storageUid,
         image_uids: imageUids,
+      }
+
+      if (size_range_type === "LETTER_RANGE") {
+        submitData.letter_range_min = letter_range_min
+        submitData.letter_range_max = letter_range_max
+      } else if (size_range_type === "AGE_RANGE_YEAR") {
+        submitData.age_range_year_min = age_range_year_min
+        submitData.age_range_year_max = age_range_year_max
+      } else if (size_range_type === "AGE_RANGE_MONTH") {
+        submitData.age_range_month_min = age_range_month_min
+        submitData.age_range_month_max = age_range_month_max
       }
 
       const response = await apiCall(`/sample_manager/sample/${storageUid}`, {
@@ -521,50 +560,123 @@ export default function AddSamplePage() {
                     />
                   </div> */}
 
-                  {/* Size Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Size Type</label>
+                  {/* Size Range Type */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">Size Range Type</label>
                     <select
-                      name="size_type"
-                      value={formData.size_type}
+                      name="size_range_type"
+                      value={formData.size_range_type}
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
-                      <option value="CENTIMETER">CENTIMETER</option>
-                      <option value="LETTER">LETTER</option>
+                      <option value="LETTER_RANGE">LETTER_RANGE</option>
+                      <option value="AGE_RANGE_YEAR">AGE_RANGE_YEAR</option>
+                      <option value="AGE_RANGE_MONTH">AGE_RANGE_MONTH</option>
                     </select>
                   </div>
 
-                  {/* Size */}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Size</label>
-                    {formData.size_type === "LETTER" ? (
-                      <select
-                        name="size"
-                        value={formData.size}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                          }`}
-                      >
-                        <option value="">Select Size</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        name="size"
-                        value={formData.size}
-                        onChange={handleChange}
-                        placeholder="e.g., 20"
-                        className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                          }`}
-                      />
-                    )}
-                  </div>
+                  {/* Letter Range */}
+                  {formData.size_range_type === "LETTER_RANGE" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Letter Range Min</label>
+                        <select
+                          name="letter_range_min"
+                          value={formData.letter_range_min}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Min</option>
+                          {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Letter Range Max</label>
+                        <select
+                          name="letter_range_max"
+                          value={formData.letter_range_max}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Max</option>
+                          {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Age Range Year */}
+                  {formData.size_range_type === "AGE_RANGE_YEAR" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Age Range Year Min</label>
+                        <select
+                          name="age_range_year_min"
+                          value={formData.age_range_year_min}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Min</option>
+                          {Array.from({ length: 100 }, (_, i) => i + 1).map((age) => (
+                            <option key={age} value={age}>{age}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Age Range Year Max</label>
+                        <select
+                          name="age_range_year_max"
+                          value={formData.age_range_year_max}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Max</option>
+                          {Array.from({ length: 100 }, (_, i) => i + 1).map((age) => (
+                            <option key={age} value={age}>{age}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Age Range Month */}
+                  {formData.size_range_type === "AGE_RANGE_MONTH" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Age Range Month Min</label>
+                        <select
+                          name="age_range_month_min"
+                          value={formData.age_range_month_min}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Min</option>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                            <option key={month} value={month}>{month}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Age Range Month Max</label>
+                        <select
+                          name="age_range_month_max"
+                          value={formData.age_range_month_max}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Select Max</option>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                            <option key={month} value={month}>{month}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
                   {/* Color */}
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-foreground mb-2">Color</label>

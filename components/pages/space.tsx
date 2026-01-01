@@ -385,9 +385,11 @@ export default function SpacePage() {
     // Filter State
     const [weightRange, setWeightRange] = useState<[number, number]>([0, 2000])
     const [ageRange, setAgeRange] = useState<[number, number]>([0, 100])
-    const [sizeType, setSizeType] = useState<'letter' | 'centimeter' | null>(null)
-    const [letterSize, setLetterSize] = useState<string>("")
-    const [centimeterRange, setCentimeterRange] = useState<[number, number]>([0, 200])
+    const [sizeRangeTypes, setSizeRangeTypes] = useState<string[]>([])
+    const [letterRangeMin, setLetterRangeMin] = useState<string>("")
+    const [letterRangeMax, setLetterRangeMax] = useState<string>("")
+    const [ageRangeYear, setAgeRangeYear] = useState<[number, number]>([1, 100])
+    const [ageRangeMonth, setAgeRangeMonth] = useState<[number, number]>([1, 12])
     const [selectedColor, setSelectedColor] = useState<string>("")
     const [sampleType, setSampleType] = useState<string>("")
     const [category, setCategory] = useState<string>("")
@@ -699,7 +701,7 @@ export default function SpacePage() {
         setSampleIsSaving(true)
 
         try {
-            const submitData = {
+            const submitData: any = {
                 arrival_date: sampleEditData.arrival_date,
                 style_no: sampleEditData.style_no,
                 sku_no: sampleEditData.sku_no,
@@ -707,12 +709,11 @@ export default function SpacePage() {
                 fabrication: sampleEditData.fabrication,
                 weight: sampleEditData.weight,
                 weight_type: sampleEditData.weight_type,
-                size_type: sampleEditData.size_type,
+                size_range_type: sampleEditData.size_range_type,
                 types: sampleEditData.types,
                 category: sampleEditData.category,
                 sub_category: sampleEditData.sub_category,
                 color: sampleEditData.color,
-                size: sampleEditData.size,
                 size_range: sampleEditData.size_range,
                 comments: sampleEditData.comments,
                 name: sampleEditData.name,
@@ -722,6 +723,17 @@ export default function SpacePage() {
                 project_uids: sampleEditData.projects?.map((p: any) => p.uid) || [],
                 note_uids: sampleEditData.notes?.map((n: any) => n.uid) || [],
                 storage_uid: storageUid,
+            }
+
+            if (sampleEditData.size_range_type === "LETTER_RANGE") {
+                submitData.letter_range_min = sampleEditData.letter_range_min
+                submitData.letter_range_max = sampleEditData.letter_range_max
+            } else if (sampleEditData.size_range_type === "AGE_RANGE_YEAR") {
+                submitData.age_range_year_min = sampleEditData.age_range_year_min
+                submitData.age_range_year_max = sampleEditData.age_range_year_max
+            } else if (sampleEditData.size_range_type === "AGE_RANGE_MONTH") {
+                submitData.age_range_month_min = sampleEditData.age_range_month_min
+                submitData.age_range_month_max = sampleEditData.age_range_month_max
             }
 
             const response = await apiCall(`/sample_manager/sample/${storageUid}/${selectedSample.uid}`, {
@@ -903,11 +915,26 @@ export default function SpacePage() {
             params.append("age_range_min", ageRange[0].toString())
             params.append("age_range_max", ageRange[1].toString())
 
-            if (sizeType === 'letter' && letterSize) {
-                params.append("size", letterSize)
-            } else if (sizeType === 'centimeter') {
-                params.append("size_cen_min", centimeterRange[0].toString())
-                params.append("size_cen_max", centimeterRange[1].toString())
+            // Size Range Types logic
+            if (sizeRangeTypes.length > 0) {
+                sizeRangeTypes.forEach(type => {
+                    params.append("size_range_type", type)
+                })
+            }
+
+            if (sizeRangeTypes.includes("LETTER_RANGE")) {
+                if (letterRangeMin) params.append("letter_range_min", letterRangeMin)
+                if (letterRangeMax) params.append("letter_range_max", letterRangeMax)
+            }
+
+            if (sizeRangeTypes.includes("AGE_RANGE_YEAR")) {
+                params.append("age_range_year_min", ageRangeYear[0].toString())
+                params.append("age_range_year_max", ageRangeYear[1].toString())
+            }
+
+            if (sizeRangeTypes.includes("AGE_RANGE_MONTH")) {
+                params.append("age_range_month_min", ageRangeMonth[0].toString())
+                params.append("age_range_month_max", ageRangeMonth[1].toString())
             }
 
             if (selectedColor && selectedColor !== "all") params.append("color", selectedColor)
@@ -1163,59 +1190,136 @@ export default function SpacePage() {
                                         />
                                     </div>
 
-                                    {/* Size Filter */}
+                                    {/* Size Range Type Filter */}
                                     <div className="space-y-3">
-                                        <Label className="block">Size Type</Label>
+                                        <Label className="block">Size Range Type</Label>
                                         <div className="flex flex-col gap-2">
+                                            {/* LETTER_RANGE Checkbox */}
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
-                                                    id="size-letter"
-                                                    checked={sizeType === 'letter'}
-                                                    onCheckedChange={() => setSizeType(sizeType === 'letter' ? null : 'letter')}
+                                                    id="range-letter"
+                                                    checked={sizeRangeTypes.includes("LETTER_RANGE")}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSizeRangeTypes([...sizeRangeTypes, "LETTER_RANGE"])
+                                                        } else {
+                                                            setSizeRangeTypes(sizeRangeTypes.filter(t => t !== "LETTER_RANGE"))
+                                                        }
+                                                    }}
                                                 />
-                                                <Label htmlFor="size-letter" className="cursor-pointer">Letter Size</Label>
+                                                <Label htmlFor="range-letter" className="cursor-pointer">LETTER RANGE</Label>
                                             </div>
-                                            {sizeType === 'letter' && (
-                                                <div className="relative">
-                                                    <Select value={letterSize} onValueChange={setLetterSize}>
-                                                        <SelectTrigger className="w-full mt-1 pr-8">
-                                                            <SelectValue placeholder="Select size" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {LETTER_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {letterSize && (
-                                                        <X
-                                                            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation()
-                                                                setLetterSize("")
-                                                            }}
-                                                        />
-                                                    )}
+                                            {sizeRangeTypes.includes("LETTER_RANGE") && (
+                                                <div className="pl-6 space-y-2">
+                                                    <div>
+                                                        <Label className="text-xs text-muted-foreground">Letter Range Min</Label>
+                                                        <div className="relative">
+                                                            <Select
+                                                                value={letterRangeMin}
+                                                                onValueChange={setLetterRangeMin}
+                                                            >
+                                                                <SelectTrigger className="w-full mt-1 h-8 text-xs pr-8">
+                                                                    <SelectValue placeholder="Select Min" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                                </SelectContent>
+                                                            </Select>
+                                                            {letterRangeMin && (
+                                                                <X
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        setLetterRangeMin("")
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-xs text-muted-foreground">Letter Range Max</Label>
+                                                        <div className="relative">
+                                                            <Select
+                                                                value={letterRangeMax}
+                                                                onValueChange={setLetterRangeMax}
+                                                            >
+                                                                <SelectTrigger className="w-full mt-1 h-8 text-xs pr-8">
+                                                                    <SelectValue placeholder="Select Max" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                                </SelectContent>
+                                                            </Select>
+                                                            {letterRangeMax && (
+                                                                <X
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        setLetterRangeMax("")
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             )}
 
+                                            {/* AGE_RANGE_YEAR Checkbox */}
                                             <div className="flex items-center space-x-2 mt-2">
                                                 <Checkbox
-                                                    id="size-cen"
-                                                    checked={sizeType === 'centimeter'}
-                                                    onCheckedChange={() => setSizeType(sizeType === 'centimeter' ? null : 'centimeter')}
+                                                    id="range-year"
+                                                    checked={sizeRangeTypes.includes("AGE_RANGE_YEAR")}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSizeRangeTypes([...sizeRangeTypes, "AGE_RANGE_YEAR"])
+                                                        } else {
+                                                            setSizeRangeTypes(sizeRangeTypes.filter(t => t !== "AGE_RANGE_YEAR"))
+                                                        }
+                                                    }}
                                                 />
-                                                <Label htmlFor="size-cen" className="cursor-pointer">Centimeter Size</Label>
+                                                <Label htmlFor="range-year" className="cursor-pointer">AGE RANGE YEAR</Label>
                                             </div>
-                                            {sizeType === 'centimeter' && (
-                                                <div className="pt-2 pl-6">
+                                            {sizeRangeTypes.includes("AGE_RANGE_YEAR") && (
+                                                <div className="pl-6 pt-2">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <Label className="text-xs text-muted-foreground">Range ({centimeterRange[0]} - {centimeterRange[1]})</Label>
+                                                        <Label className="text-xs text-muted-foreground">Year Range ({ageRangeYear[0]} - {ageRangeYear[1]})</Label>
                                                     </div>
                                                     <Slider
-                                                        value={centimeterRange}
-                                                        min={0}
-                                                        max={200}
+                                                        value={ageRangeYear}
+                                                        min={1}
+                                                        max={100}
                                                         step={1}
-                                                        onValueChange={(val: any) => setCentimeterRange(val)}
+                                                        onValueChange={(val: any) => setAgeRangeYear(val)}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {/* AGE_RANGE_MONTH Checkbox */}
+                                            <div className="flex items-center space-x-2 mt-2">
+                                                <Checkbox
+                                                    id="range-month"
+                                                    checked={sizeRangeTypes.includes("AGE_RANGE_MONTH")}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSizeRangeTypes([...sizeRangeTypes, "AGE_RANGE_MONTH"])
+                                                        } else {
+                                                            setSizeRangeTypes(sizeRangeTypes.filter(t => t !== "AGE_RANGE_MONTH"))
+                                                        }
+                                                    }}
+                                                />
+                                                <Label htmlFor="range-month" className="cursor-pointer">AGE RANGE MONTH</Label>
+                                            </div>
+                                            {sizeRangeTypes.includes("AGE_RANGE_MONTH") && (
+                                                <div className="pl-6 pt-2">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <Label className="text-xs text-muted-foreground">Month Range ({ageRangeMonth[0]} - {ageRangeMonth[1]})</Label>
+                                                    </div>
+                                                    <Slider
+                                                        value={ageRangeMonth}
+                                                        min={1}
+                                                        max={12}
+                                                        step={1}
+                                                        onValueChange={(val: any) => setAgeRangeMonth(val)}
                                                     />
                                                 </div>
                                             )}
@@ -1684,7 +1788,7 @@ export default function SpacePage() {
                         <Card className="w-full max-w-2xl border-border max-h-[100vh] overflow-y-auto">
                             <CardHeader className="flex items-center justify-between border-b border-border pb-3">
                                 <CardTitle className="text-lg sm:text-xl">Edit Sample - {selectedSample.name}</CardTitle>
-                                <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+                                <button onClick={() => setSampleEditModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0 cursor-pointer">
                                     <X className="w-5 h-5" />
                                 </button>
                             </CardHeader>
@@ -1803,44 +1907,115 @@ export default function SpacePage() {
                                                 />
                                             </div>
 
-                                            {/* Size Type */}
                                             <div>
-                                                <label className="text-sm font-medium text-foreground block mb-2">Size Type</label>
+                                                <label className="text-sm font-medium text-foreground block mb-2">Size Range Type</label>
                                                 <select
-                                                    value={sampleEditData.size_type}
-                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size_type: e.target.value })}
+                                                    value={sampleEditData.size_range_type || "LETTER_RANGE"}
+                                                    onChange={(e) => setSampleEditData({ ...sampleEditData, size_range_type: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
-                                                    <option value="CENTIMETER">CENTIMETER</option>
-                                                    <option value="LETTER">LETTER</option>
+                                                    <option value="LETTER_RANGE">LETTER_RANGE</option>
+                                                    <option value="AGE_RANGE_YEAR">AGE_RANGE_YEAR</option>
+                                                    <option value="AGE_RANGE_MONTH">AGE_RANGE_MONTH</option>
                                                 </select>
                                             </div>
 
-                                            {/* Size */}
-                                            <div>
-                                                <label className="text-sm font-medium text-foreground block mb-2">Size</label>
-                                                {sampleEditData.size_type === "LETTER" ? (
-                                                    <select
-                                                        value={sampleEditData.size}
-                                                        onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
-                                                        className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                                    >
-                                                        <option value="">Select Size</option>
-                                                        <option value="S">S</option>
-                                                        <option value="M">M</option>
-                                                        <option value="L">L</option>
-                                                        <option value="XL">XL</option>
-                                                        <option value="XXL">XXL</option>
-                                                    </select>
-                                                ) : (
-                                                    <input
-                                                        type="text"
-                                                        value={sampleEditData.size}
-                                                        onChange={(e) => setSampleEditData({ ...sampleEditData, size: e.target.value })}
-                                                        className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                                    />
-                                                )}
-                                            </div>
+                                            {/* Letter Range */}
+                                            {sampleEditData.size_range_type === "LETTER_RANGE" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Letter Range Min</label>
+                                                        <select
+                                                            value={sampleEditData.letter_range_min || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_min: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Min</option>
+                                                            {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
+                                                                <option key={opt} value={opt}>{opt}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Letter Range Max</label>
+                                                        <select
+                                                            value={sampleEditData.letter_range_max || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_max: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Max</option>
+                                                            {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
+                                                                <option key={opt} value={opt}>{opt}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Age Range Year */}
+                                            {sampleEditData.size_range_type === "AGE_RANGE_YEAR" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Age Range Year Min</label>
+                                                        <select
+                                                            value={sampleEditData.age_range_year_min || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, age_range_year_min: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Min</option>
+                                                            {Array.from({ length: 100 }, (_, i) => i + 1).map((age) => (
+                                                                <option key={age} value={age}>{age}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Age Range Year Max</label>
+                                                        <select
+                                                            value={sampleEditData.age_range_year_max || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, age_range_year_max: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Max</option>
+                                                            {Array.from({ length: 100 }, (_, i) => i + 1).map((age) => (
+                                                                <option key={age} value={age}>{age}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Age Range Month */}
+                                            {sampleEditData.size_range_type === "AGE_RANGE_MONTH" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Age Range Month Min</label>
+                                                        <select
+                                                            value={sampleEditData.age_range_month_min || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, age_range_month_min: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Min</option>
+                                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                                                                <option key={month} value={month}>{month}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-foreground block mb-2">Age Range Month Max</label>
+                                                        <select
+                                                            value={sampleEditData.age_range_month_max || ""}
+                                                            onChange={(e) => setSampleEditData({ ...sampleEditData, age_range_month_max: e.target.value })}
+                                                            className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            <option value="">Select Max</option>
+                                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                                                                <option key={month} value={month}>{month}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </>
+                                            )}
+
 
                                             {/* Fabrication */}
                                             <div>
@@ -2119,7 +2294,7 @@ export default function SpacePage() {
                                             <Button
                                                 onClick={handleSampleSaveEdit}
                                                 disabled={sampleIsSaving}
-                                                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+                                                className="flex-1 bg-primary hover:bg-primary/90 text-white cursor-pointer"
                                             >
                                                 {sampleIsSaving ? (
                                                     <>
@@ -2132,7 +2307,7 @@ export default function SpacePage() {
                                             </Button>
                                             <Button
                                                 variant="outline"
-                                                className="flex-1 bg-transparent"
+                                                className="flex-1 bg-transparent cursor-pointer"
                                                 onClick={() => setSampleEditModal(false)}
                                             >
                                                 Cancel
@@ -2163,7 +2338,7 @@ export default function SpacePage() {
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="gap-2"
+                                        className="gap-2 cursor-pointer"
                                         onClick={() => {
                                             setSampleDetailsModal(false)
                                             handleSampleEditClick(sampleDetails)
@@ -2175,7 +2350,7 @@ export default function SpacePage() {
                                     <Button
                                         size="sm"
                                         variant="destructive"
-                                        className="gap-2"
+                                        className="gap-2 cursor-pointer"
                                         onClick={() => {
                                             setSampleDetailsModal(false)
                                             handleSampleDeleteClick(sampleDetails)
@@ -2184,7 +2359,7 @@ export default function SpacePage() {
                                         <Trash2 className="w-4 h-4" />
                                         Delete
                                     </Button>
-                                    <button onClick={() => setSampleDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0 ml-2">
+                                    <button onClick={() => setSampleDetailsModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0 ml-2 cursor-pointer">
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -2242,20 +2417,60 @@ export default function SpacePage() {
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Color</label>
                                                 <p className="text-foreground">{sampleDetails.color || "-"}</p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Size</label>
                                                 <p className="text-foreground">{sampleDetails.size || "-"}</p>
-                                            </div>
+                                            </div> */}
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Weight</label>
                                                 <p className="text-foreground">
                                                     {sampleDetails.weight} {sampleDetails.weight_type || "-"}
                                                 </p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Size Type</label>
                                                 <p className="text-foreground">{sampleDetails.size_type || "-"}</p>
+                                            </div> */}
+                                            <div>
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase">Size Range Type</label>
+                                                <p className="text-foreground">{sampleDetails.size_range_type || "-"}</p>
                                             </div>
+                                            {sampleDetails.size_range_type === "LETTER_RANGE" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Letter Range Min</label>
+                                                        <p className="text-foreground">{sampleDetails.letter_range_min || "-"}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Letter Range Max</label>
+                                                        <p className="text-foreground">{sampleDetails.letter_range_max || "-"}</p>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {sampleDetails.size_range_type === "AGE_RANGE_YEAR" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range Year Min</label>
+                                                        <p className="text-foreground">{sampleDetails.age_range_year_min || "-"}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range Year Max</label>
+                                                        <p className="text-foreground">{sampleDetails.age_range_year_max || "-"}</p>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {sampleDetails.size_range_type === "AGE_RANGE_MONTH" && (
+                                                <>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range Month Min</label>
+                                                        <p className="text-foreground">{sampleDetails.age_range_month_min || "-"}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range Month Max</label>
+                                                        <p className="text-foreground">{sampleDetails.age_range_month_max || "-"}</p>
+                                                    </div>
+                                                </>
+                                            )}
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Type</label>
                                                 <p className="text-foreground">{sampleDetails.types || "-"}</p>
@@ -2354,7 +2569,7 @@ export default function SpacePage() {
                             </CardContent>
 
                             <CardFooter className="border-t border-border flex justify-end gap-2">
-                                <Button variant="outline" onClick={() => setSampleDetailsModal(false)}>
+                                <Button variant="outline" onClick={() => setSampleDetailsModal(false)} className="cursor-pointer">
                                     Close
                                 </Button>
                             </CardFooter>
