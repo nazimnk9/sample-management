@@ -12,7 +12,11 @@ import {
   BarChart3,
   Settings,
   FileText,
+  Icon,
 } from "lucide-react"
+import { wardrobe } from "@lucide/lab"
+
+const WardrobeIcon = (props: any) => <Icon iconNode={wardrobe} {...props} />
 import { useEffect, useState } from "react"
 import { getCurrentUserRole, canAccessFeature } from "@/lib/auth-utils"
 
@@ -39,7 +43,7 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
     // { id: "company", label: "Company", icon: Building2, feature: "company_list" },
     { id: "buyers", label: "Buyers", icon: Users, feature: "buyer_list" },
     { id: "projects", label: "Projects", icon: FolderOpen, feature: "project_list" },
-    { id: "space", label: "Space", icon: Grid3x3, feature: "space_list" },
+    { id: "space", label: "Space", icon: WardrobeIcon, feature: "space_list" },
     // { id: "drawers", label: "Drawers", icon: Archive, feature: "drawer_list" },
     // { id: "analytics", label: "Analytics", icon: BarChart3, feature: "analytics_list" },
     // { id: "notes", label: "Notes", icon: FileText, feature: "notes_list" },

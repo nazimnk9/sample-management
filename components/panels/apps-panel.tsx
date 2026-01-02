@@ -13,10 +13,10 @@ export default function AppsPanel() {
         </Link>
 
         {/* Drawer */}
-        <Link href="/drawers" className="p-4 border border-border rounded-lg bg-sidebar transition-colors cursor-pointer block">
+        {/* <Link href="/drawers" className="p-4 border border-border rounded-lg bg-sidebar transition-colors cursor-pointer block">
           <h4 className="font-medium text-white mb-2">Drawer</h4>
           <p className="text-xs text-white/90">Track and organize sample drawers and compartments</p>
-        </Link>
+        </Link> */}
       </div>
     </div>
   )
