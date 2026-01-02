@@ -1595,7 +1595,7 @@ export default function SpacePage() {
                     <div className="relative">
                         <Button
                             variant="outline"
-                            className="bg-transparent border-black h-9 w-20 transition-colors"
+                            className="bg-transparent border-black h-9 w-20 hover:bg-red-500 transition-colors"
                             onClick={handleReset}
                         >
                             Reset
@@ -1809,6 +1809,50 @@ export default function SpacePage() {
                 )
             }
 
+            {
+                deleteConfirmModal && selectedSpace && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md border-border">
+                            <CardHeader className="flex items-center justify-between border-b border-border pb-3">
+                                <CardTitle className="text-lg font-bold text-destructive">Delete Space</CardTitle>
+                                <button onClick={() => setDeleteConfirmModal(false)} className="p-1 hover:bg-muted rounded flex-shrink-0">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <p className="text-foreground mb-6">
+                                    Are you sure you want to delete <span className="font-semibold">{selectedSpace.name}</span>? This action cannot be undone and will delete all contents inside.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <Button
+                                        onClick={handleConfirmDelete}
+                                        disabled={isDeleting}
+                                        variant="destructive"
+                                        className="flex-1 cursor-pointer"
+                                    >
+                                        {isDeleting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                Deleting...
+                                            </>
+                                        ) : (
+                                            "Delete"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 bg-transparent cursor-pointer"
+                                        onClick={() => setDeleteConfirmModal(false)}
+                                        disabled={isDeleting}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
 
             {
                 spacePreviewModal && previewSpace && (
