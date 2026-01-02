@@ -726,8 +726,8 @@ export default function SpacePage() {
             }
 
             if (sampleEditData.size_range_type === "LETTER_RANGE") {
-                submitData.letter_range_min = sampleEditData.letter_range_min
-                submitData.letter_range_max = sampleEditData.letter_range_max
+                submitData.letter_range_min = Number(sampleEditData.letter_range_min)
+                submitData.letter_range_max = Number(sampleEditData.letter_range_max)
             } else if (sampleEditData.size_range_type === "AGE_RANGE_YEAR") {
                 submitData.age_range_year_min = sampleEditData.age_range_year_min
                 submitData.age_range_year_max = sampleEditData.age_range_year_max
@@ -894,6 +894,20 @@ export default function SpacePage() {
     const FILTER_SUB_CATEGORIES = ["MENS", "JR_LADIES", "WOMEN", "JUNIOR_BOYS", "SENIOR_BOYS", "TODDLER_BOYS", "JUNIOR_GIRLS", "SENIOR_GIRLS", "TODDLER_GIRLS", "KIDS"]
     const LETTER_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
 
+    const LETTER_SIZES_MAPPING = [
+        { label: "XXS", value: 1 },
+        { label: "XS", value: 2 },
+        { label: "S", value: 3 },
+        { label: "M", value: 4 },
+        { label: "L", value: 5 },
+        { label: "XL", value: 6 },
+        { label: "XXL", value: 7 },
+        { label: "2XL", value: 8 },
+        { label: "3XL", value: 9 },
+        { label: "4XL", value: 10 },
+        { label: "5XL", value: 11 },
+    ]
+
     // Sort options as per user request
     const SORT_OPTIONS = [
         { label: "Color for ASC", value: "color" },
@@ -912,9 +926,10 @@ export default function SpacePage() {
         5: "L",
         6: "XL",
         7: "XXL",
-        8: "3XL",
-        9: "4XL",
-        10: "5XL"
+        8: "2XL",
+        9: "3XL",
+        10: "4XL",
+        11: "5XL"
     }
 
     const getLetterSizeLabel = (val: any) => {
@@ -1948,26 +1963,26 @@ export default function SpacePage() {
                                                     <div>
                                                         <label className="text-sm font-medium text-foreground block mb-2">Letter Range Min</label>
                                                         <select
-                                                            value={getLetterSizeLabel(sampleEditData.letter_range_min) || ""}
+                                                            value={sampleEditData.letter_range_min || ""}
                                                             onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_min: e.target.value })}
                                                             className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                         >
                                                             <option value="">Select Min</option>
-                                                            {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
-                                                                <option key={opt} value={opt}>{opt}</option>
+                                                            {LETTER_SIZES_MAPPING.map((size, index) => (
+                                                                <option key={`${size.label}-${index}`} value={size.value}>{size.label}</option>
                                                             ))}
                                                         </select>
                                                     </div>
                                                     <div>
                                                         <label className="text-sm font-medium text-foreground block mb-2">Letter Range Max</label>
                                                         <select
-                                                            value={getLetterSizeLabel(sampleEditData.letter_range_max) || ""}
+                                                            value={sampleEditData.letter_range_max || ""}
                                                             onChange={(e) => setSampleEditData({ ...sampleEditData, letter_range_max: e.target.value })}
                                                             className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                         >
                                                             <option value="">Select Max</option>
-                                                            {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
-                                                                <option key={opt} value={opt}>{opt}</option>
+                                                            {LETTER_SIZES_MAPPING.map((size, index) => (
+                                                                <option key={`${size.label}-${index}`} value={size.value}>{size.label}</option>
                                                             ))}
                                                         </select>
                                                     </div>

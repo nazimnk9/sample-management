@@ -35,6 +35,20 @@ interface Note {
   title: string
 }
 
+const LETTER_SIZES = [
+  { label: "XXS", value: 1 },
+  { label: "XS", value: 2 },
+  { label: "S", value: 3 },
+  { label: "M", value: 4 },
+  { label: "L", value: 5 },
+  { label: "XL", value: 6 },
+  { label: "XXL", value: 7 },
+  { label: "2XL", value: 8 },
+  { label: "3XL", value: 9 },
+  { label: "4XL", value: 10 },
+  { label: "5XL", value: 11 },
+]
+
 export default function AddSamplePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -345,8 +359,8 @@ export default function AddSamplePage() {
       }
 
       if (size_range_type === "LETTER_RANGE") {
-        submitData.letter_range_min = letter_range_min
-        submitData.letter_range_max = letter_range_max
+        submitData.letter_range_min = Number(letter_range_min)
+        submitData.letter_range_max = Number(letter_range_max)
       } else if (size_range_type === "AGE_RANGE_YEAR") {
         submitData.age_range_year_min = age_range_year_min
         submitData.age_range_year_max = age_range_year_max
@@ -587,8 +601,8 @@ export default function AddSamplePage() {
                           className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value="">Select Min</option>
-                          {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                          {LETTER_SIZES.map((size, index) => (
+                            <option key={`${size.label}-${index}`} value={size.value}>{size.label}</option>
                           ))}
                         </select>
                       </div>
@@ -601,8 +615,8 @@ export default function AddSamplePage() {
                           className="w-full px-4 py-2.5 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value="">Select Max</option>
-                          {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'].map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                          {LETTER_SIZES.map((size, index) => (
+                            <option key={`${size.label}-${index}`} value={size.value}>{size.label}</option>
                           ))}
                         </select>
                       </div>
