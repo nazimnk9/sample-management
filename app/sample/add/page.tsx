@@ -74,7 +74,7 @@ export default function AddSamplePage() {
     category: "CIRCULAR_KNIT",
     sub_category: "MENS",
     color: "",
-    size_range: "",
+    //size_range: "",
     comments: "",
     name: "",
     description: "",
@@ -706,7 +706,7 @@ export default function AddSamplePage() {
                   </div>
 
                   {/* Age Range */}
-                  <div className="sm:col-span-2">
+                  {/* <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-foreground mb-2">Age Range</label>
                     <input
                       type="text"
@@ -717,7 +717,7 @@ export default function AddSamplePage() {
                       className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.size_range ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                         }`}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Size */}
                   {/* <div>

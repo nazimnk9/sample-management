@@ -714,7 +714,7 @@ export default function SpacePage() {
                 category: sampleEditData.category,
                 sub_category: sampleEditData.sub_category,
                 color: sampleEditData.color,
-                size_range: sampleEditData.size_range,
+                //size_range: sampleEditData.size_range,
                 comments: sampleEditData.comments,
                 name: sampleEditData.name,
                 description: sampleEditData.description,
@@ -997,6 +997,29 @@ export default function SpacePage() {
         }
     }
 
+    const handleReset = () => {
+        setSearchQuery("")
+        setOrdering("")
+        setWeightRange([0, 2000])
+        setAgeRange([0, 100])
+        setSizeRangeTypes([])
+        setLetterRangeMin("")
+        setLetterRangeMax("")
+        setAgeRangeYear([1, 100])
+        setAgeRangeMonth([1, 12])
+        setSelectedColor("")
+        setSampleType("")
+        setCategory("")
+        setSubCategory("")
+        setSelectedBuyer("")
+        setSelectedProject("")
+        setIsFiltered(false)
+
+        setTimeout(() => {
+            fetchSpacesAndSamples()
+        }, 0)
+    }
+
     // Trigger search when ordering changes
     useEffect(() => {
         if (ordering) {
@@ -1214,6 +1237,55 @@ export default function SpacePage() {
                                 </SheetDescription>
                             </SheetHeader>
                             <div className="py-6 px-6 space-y-6">
+                                {/* Category Filter */}
+                                <div className="space-y-3">
+                                    <Label>Category</Label>
+                                    <div className="relative">
+                                        <Select value={category} onValueChange={setCategory}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Categories</SelectItem>
+                                                {FILTER_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {category && category !== "all" && (
+                                            <X
+                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setCategory("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Sub Category Filter */}
+                                <div className="space-y-3">
+                                    <Label>Sub Category</Label>
+                                    <div className="relative">
+                                        <Select value={subCategory} onValueChange={setSubCategory}>
+                                            <SelectTrigger className="pr-8">
+                                                <SelectValue placeholder="Select sub category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Sub Categories</SelectItem>
+                                                {FILTER_SUB_CATEGORIES.map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        {subCategory && subCategory !== "all" && (
+                                            <X
+                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSubCategory("all")
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
                                 {/* Weight Filter */}
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
@@ -1231,7 +1303,7 @@ export default function SpacePage() {
                                 </div>
 
                                 {/* Age Range Filter */}
-                                <div className="space-y-3">
+                                {/* <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <Label>Age Range</Label>
                                         <span className="text-xs text-muted-foreground">{ageRange[0]} - {ageRange[1]}</span>
@@ -1244,7 +1316,7 @@ export default function SpacePage() {
                                         onValueChange={(val: any) => setAgeRange(val)}
                                         className="py-2"
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* Size Range Type Filter */}
                                 <div className="space-y-3">
@@ -1481,56 +1553,6 @@ export default function SpacePage() {
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Category Filter */}
-                                <div className="space-y-3">
-                                    <Label>Category</Label>
-                                    <div className="relative">
-                                        <Select value={category} onValueChange={setCategory}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Categories</SelectItem>
-                                                {FILTER_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {category && category !== "all" && (
-                                            <X
-                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setCategory("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Sub Category Filter */}
-                                <div className="space-y-3">
-                                    <Label>Sub Category</Label>
-                                    <div className="relative">
-                                        <Select value={subCategory} onValueChange={setSubCategory}>
-                                            <SelectTrigger className="pr-8">
-                                                <SelectValue placeholder="Select sub category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Sub Categories</SelectItem>
-                                                {FILTER_SUB_CATEGORIES.map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                        {subCategory && subCategory !== "all" && (
-                                            <X
-                                                className="absolute left-38 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSubCategory("all")
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                             <SheetFooter className="gap-2">
                                 <Button className="flex-1" onClick={handleFilterSearch} disabled={isLoading}>
@@ -1567,6 +1589,17 @@ export default function SpacePage() {
                                 }}
                             />
                         )}
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="relative">
+                        <Button
+                            variant="outline"
+                            className="bg-transparent border-black h-10 w-24 hover:bg-black hover:text-white transition-colors"
+                            onClick={handleReset}
+                        >
+                            Reset
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -2124,7 +2157,7 @@ export default function SpacePage() {
                                         </div>
 
                                         {/* Age Range */}
-                                        <div>
+                                        {/* <div>
                                             <label className="text-sm font-medium text-foreground block mb-2">Age Range</label>
                                             <input
                                                 type="text"
@@ -2132,7 +2165,7 @@ export default function SpacePage() {
                                                 onChange={(e) => setSampleEditData({ ...sampleEditData, size_range: e.target.value })}
                                                 className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                             />
-                                        </div>
+                                        </div> */}
 
                                         <div>
                                             <label className="text-sm font-medium text-foreground block mb-2">Comments</label>
@@ -2518,10 +2551,10 @@ export default function SpacePage() {
                                                     {sampleDetails.arrival_date ? new Date(sampleDetails.arrival_date).toLocaleDateString() : "-"}
                                                 </p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase">Age Range</label>
                                                 <p className="text-foreground">{sampleDetails.size_range || "-"}</p>
-                                            </div>
+                                            </div> */}
                                         </div>
 
                                         {/* Description */}
