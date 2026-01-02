@@ -1595,7 +1595,7 @@ export default function SpacePage() {
                     <div className="relative">
                         <Button
                             variant="outline"
-                            className="bg-transparent border-black h-10 w-24 hover:bg-black hover:text-white transition-colors"
+                            className="bg-transparent border-black h-9 w-20 transition-colors"
                             onClick={handleReset}
                         >
                             Reset
