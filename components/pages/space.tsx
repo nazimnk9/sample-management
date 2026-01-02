@@ -1040,7 +1040,7 @@ export default function SpacePage() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
-            <div className="mb-6 sm:mb-8 flex items-center justify-between">
+            <div className="mb-6 sm:mb-8 flex items-center justify-between gap-6">
                 <div className="flex items-center gap-3">
                     {parentStack.length > 0 && (
                         <button onClick={handleBackClick} className="p-2 hover:bg-muted rounded-lg transition">
@@ -1092,9 +1092,28 @@ export default function SpacePage() {
                     </div>
                 </div>
 
-                {/* Global Search Option */}
+                {/* Add Buttons */}
+            <div className="flex flex-row gap-2 mb-6 sm:mb-8">
+                <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
+                    <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Space
+                    </Button>
+                </Link>
+                {currentParentUid && (
+                    <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
+                        <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
+                            <Plus className="w-4 h-4" />
+                            Add Sample
+                        </Button>
+                    </Link>
+                )}
+            </div>
+            </div>
+
+            {/* Global Search Option */}
                 {/* Global Search & Filter */}
-                <div className="flex flex-col lg:flex-row items-center flex-1 justify-center gap-3 w-full">
+                <div className="flex flex-col lg:flex-row items-center flex-1 justify-start gap-3 w-full mb-6 sm:mb-8">
                     <div className="relative w-full lg:w-[600px]" ref={searchContainerRef}>
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <input
@@ -1551,25 +1570,6 @@ export default function SpacePage() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Add Buttons */}
-            <div className="flex gap-2 mb-6 sm:mb-8 flex-wrap">
-                <Link href={`/space/add${currentParentUid ? `?parent_uid=${currentParentUid}` : ""}`}>
-                    <Button className="bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Space
-                    </Button>
-                </Link>
-                {currentParentUid && (
-                    <Link href={`/sample/add?storage_uid=${currentParentUid}`}>
-                        <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent">
-                            <Plus className="w-4 h-4" />
-                            Add Sample
-                        </Button>
-                    </Link>
-                )}
-            </div>
 
             {isLoading ? (
                 <div className="flex items-center justify-center py-12">

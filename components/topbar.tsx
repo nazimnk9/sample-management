@@ -31,7 +31,7 @@ export default function Topbar({
   const [userOpen, setUserOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const companies = ["TechStyle Co.", "Fashion Forward Inc.", "Global Garments Ltd."]
+  const companies = ["Aiman Design ltd."]
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard" },

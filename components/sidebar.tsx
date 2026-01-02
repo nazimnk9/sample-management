@@ -36,13 +36,13 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "company", label: "Company", icon: Building2, feature: "company_list" },
+    // { id: "company", label: "Company", icon: Building2, feature: "company_list" },
     { id: "buyers", label: "Buyers", icon: Users, feature: "buyer_list" },
     { id: "projects", label: "Projects", icon: FolderOpen, feature: "project_list" },
     { id: "space", label: "Space", icon: Grid3x3, feature: "space_list" },
-    { id: "drawers", label: "Drawers", icon: Archive, feature: "drawer_list" },
-    { id: "analytics", label: "Analytics", icon: BarChart3, feature: "analytics_list" },
-    { id: "notes", label: "Notes", icon: FileText, feature: "notes_list" },
+    // { id: "drawers", label: "Drawers", icon: Archive, feature: "drawer_list" },
+    // { id: "analytics", label: "Analytics", icon: BarChart3, feature: "analytics_list" },
+    // { id: "notes", label: "Notes", icon: FileText, feature: "notes_list" },
   ]
 
   const isActive = (id: string) => pathname === `/${id}`
@@ -86,7 +86,7 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
       </nav>
 
       {/* Bottom Settings */}
-      <div className="border-t border-sidebar-border p-4 mt-auto">
+      {/* <div className="border-t border-sidebar-border p-4 mt-auto">
         <Link
           href={getAdminSettingsLink()}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive("admin-settings") || isActive("adminUser") || isActive("staffUser")
@@ -97,7 +97,7 @@ export default function Sidebar({ sidebarOpen }: SidebarProps) {
           <Settings className="w-5 h-5 flex-shrink-0" />
           {sidebarOpen && <span className="text-sm font-medium">Admin Settings</span>}
         </Link>
-      </div>
+      </div> */}
     </aside>
   )
 }

@@ -42,7 +42,7 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <Card className="border-border hover:shadow-lg transition-shadow">
           <CardHeader className="pb-2 sm:pb-3">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Samples</CardTitle>
@@ -82,10 +82,10 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mt-1">Across all regions</p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Line Chart */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        
         <Card className="lg:col-span-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <CardTitle className="text-base sm:text-lg">Sample Trends</CardTitle>
@@ -113,7 +113,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Pie Chart */}
+        
         <Card className="border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <CardTitle className="text-base sm:text-lg">Category Distribution</CardTitle>
@@ -141,7 +141,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       <div className="mt-6 sm:mt-8">
         <Card className="border-border">
@@ -152,7 +152,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="p-3 sm:p-4 bg-muted/30 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Company Name</p>
-                <p className="text-sm sm:text-base font-semibold text-foreground">TechStyle Co.</p>
+                <p className="text-sm sm:text-base font-semibold text-foreground">Aiman Design ltd.</p>
               </div>
               <div className="p-3 sm:p-4 bg-muted/30 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Your Role</p>
@@ -160,11 +160,11 @@ export default function Dashboard() {
               </div>
               <div className="p-3 sm:p-4 bg-muted/30 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Region</p>
-                <p className="text-sm sm:text-base font-semibold text-foreground">North America</p>
+                <p className="text-sm sm:text-base font-semibold text-foreground">Bangladesh</p>
               </div>
               <div className="p-3 sm:p-4 bg-muted/30 rounded-lg">
                 <p className="text-xs text-muted-foreground mb-1">Established</p>
-                <p className="text-sm sm:text-base font-semibold text-foreground">2020</p>
+                <p className="text-sm sm:text-base font-semibold text-foreground">2017</p>
               </div>
             </div>
           </CardContent>
