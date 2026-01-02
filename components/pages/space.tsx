@@ -1202,8 +1202,8 @@ export default function SpacePage() {
                 <div className="flex items-center gap-3 w-full lg:w-auto justify-start lg:justify-start">
                     <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
-                                <Filter className="h-4 w-4" />
+                            <Button variant="outline" size="icon" className="h-9 w-20 flex-shrink-0 border-black">
+                                <Filter className="h-4 w-4" /> Filter
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
@@ -1547,7 +1547,7 @@ export default function SpacePage() {
                     {/* Sort By Dropdown */}
                     <div className="relative">
                         <Select value={ordering} onValueChange={setOrdering}>
-                            <SelectTrigger className="w-[180px] pr-8">
+                            <SelectTrigger className="w-[180px] pr-8 border-black">
                                 <SelectValue placeholder="Sort By" />
                             </SelectTrigger>
                             <SelectContent>

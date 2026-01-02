@@ -101,7 +101,8 @@ export default function Topbar({
           {/* Company Selector - Hidden on mobile */}
           <div className="relative group hidden md:block">
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-accent/30 transition-colors text-foreground text-sm font-medium whitespace-nowrap">
-              {selectedCompany.split(" ")[0]}
+              {/* {selectedCompany.split(" ")[0]} */}
+              {selectedCompany}
               <ChevronDown className="w-4 h-4" />
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-white border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity">

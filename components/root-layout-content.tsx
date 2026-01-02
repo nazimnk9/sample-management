@@ -14,7 +14,7 @@ export default function RootLayoutContent({ children }: RootLayoutContentProps) 
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [selectedCompany, setSelectedCompany] = useState("TechStyle Co.")
+  const [selectedCompany, setSelectedCompany] = useState("Aiman Design ltd.")
   const [notifications, setNotifications] = useState([
     { id: 1, message: "New sample request from Buyer A", time: "2 hours ago", read: false },
     { id: 2, message: "Project status updated", time: "5 hours ago", read: false },

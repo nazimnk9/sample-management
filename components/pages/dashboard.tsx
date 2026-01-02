@@ -144,7 +144,7 @@ export default function Dashboard() {
       </div> */}
 
       <div className="mt-6 sm:mt-8">
-        <Card className="border-border">
+        <Card className="border-black">
           <CardHeader className="pb-3 sm:pb-4">
             <CardTitle className="text-base sm:text-lg">Company Information</CardTitle>
           </CardHeader>
