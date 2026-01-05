@@ -355,7 +355,7 @@ export default function ProjectsPage() {
           // const hours = String(date.getHours()).padStart(2, "0")
           // const minutes = String(date.getMinutes()).padStart(2, "0")
           // return `${year}-${month}-${day}T${hours}:${minutes}`
-           return isoString.slice(0, 16);
+          return isoString.slice(0, 16);
         }
         setFormData({
           name: data.name,
@@ -386,7 +386,7 @@ export default function ProjectsPage() {
 
       const convertToISO = (datetimeLocal: string) => {
         if (!datetimeLocal) return ""
-       return datetimeLocal.slice(0, 16);
+        return datetimeLocal.slice(0, 16);
       }
 
       const submitData = {
@@ -512,16 +512,16 @@ export default function ProjectsPage() {
   }
 
   const formatDatetimeAMPM = (isoString: string) => {
-  if (!isoString) return "";
-  const [datePart, timePart] = isoString.split("T"); // "YYYY-MM-DD" and "HH:MM:SS"
-  if (!timePart) return datePart;
+    if (!isoString) return "";
+    const [datePart, timePart] = isoString.split("T"); // "YYYY-MM-DD" and "HH:MM:SS"
+    if (!timePart) return datePart;
 
-  let [hours, minutes] = timePart.split(":");
-  let h = parseInt(hours, 10);
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12 || 12; // convert 0->12 for 12 AM
-  return `${datePart} ${h}:${minutes} ${ampm}`;
-};
+    let [hours, minutes] = timePart.split(":");
+    let h = parseInt(hours, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12; // convert 0->12 for 12 AM
+    return `${datePart} ${h}:${minutes} ${ampm}`;
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-background min-h-screen w-full overflow-y-auto">
@@ -551,78 +551,84 @@ export default function ProjectsPage() {
       </div>
 
       {/* Project Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredProjects.map((project) => (
-          <Card key={project.uid} className="border-border hover:shadow-lg transition-all relative bg-gray-200">
-            <div className="absolute top-3 right-3 z-10">
-              <button
-                onClick={() => setMenuOpen(menuOpen === project.uid ? null : project.uid)}
-                className="p-2 hover:bg-muted rounded-full transition"
-              >
-                <MoreVertical className="w-4 h-4 text-muted-foreground" />
-              </button>
-              {menuOpen === project.uid && (
-                <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg">
-                  <button
+      {filteredProjects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <p className="text-7xl font-bold text-muted-foreground">No projects to show</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredProjects.map((project) => (
+            <Card key={project.uid} className="border-border hover:shadow-lg transition-all relative bg-gray-200">
+              <div className="absolute top-3 right-3 z-10">
+                <button
+                  onClick={() => setMenuOpen(menuOpen === project.uid ? null : project.uid)}
+                  className="p-2 hover:bg-muted rounded-full transition"
+                >
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                </button>
+                {menuOpen === project.uid && (
+                  <div className="absolute top-10 right-0 bg-card border border-border rounded-lg shadow-lg">
+                    <button
+                      onClick={() => {
+                        setSelectedProject(project)
+                        setDeleteConfirmModal(true)
+                        setMenuOpen(null)
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base sm:text-lg line-clamp-2">{project.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Company</p>
+                    <p className="text-sm font-medium text-foreground">{project.company.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Images</p>
+                    <p className="text-sm font-medium text-foreground">{project.images?.length || 0} image(s)</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Buyers</p>
+                    <p className="text-sm font-medium text-foreground">{project.buyers?.length || 0} buyer(s)</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-4 border-t border-primary">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
                     onClick={() => {
                       setSelectedProject(project)
-                      setDeleteConfirmModal(true)
-                      setMenuOpen(null)
+                      setDetailsModal(true)
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-muted flex items-center gap-2"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
+                    <Eye className="w-3 sm:w-4 h-3 sm:h-4" />
+                    Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
+                    onClick={() => handleSettingsClick(project)}
+                  >
+                    <SettingsIcon className="w-3 sm:w-4 h-3 sm:h-4" />
+                    Settings
+                  </Button>
                 </div>
-              )}
-            </div>
-
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg line-clamp-2">{project.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 mb-4">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Company</p>
-                  <p className="text-sm font-medium text-foreground">{project.company.name || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Images</p>
-                  <p className="text-sm font-medium text-foreground">{project.images?.length || 0} image(s)</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Buyers</p>
-                  <p className="text-sm font-medium text-foreground">{project.buyers?.length || 0} buyer(s)</p>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-4 border-t border-primary">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
-                  onClick={() => {
-                    setSelectedProject(project)
-                    setDetailsModal(true)
-                  }}
-                >
-                  <Eye className="w-3 sm:w-4 h-3 sm:h-4" />
-                  Details
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
-                  onClick={() => handleSettingsClick(project)}
-                >
-                  <SettingsIcon className="w-3 sm:w-4 h-3 sm:h-4" />
-                  Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Details Modal */}
       {detailsModal && selectedProject && (
@@ -745,8 +751,8 @@ export default function ProjectsPage() {
                     value={formData.will_finish_at}
                     onChange={handleFormChange}
                     className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.will_finish_at
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-border focus:ring-primary"
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-border focus:ring-primary"
                       }`}
                   />
                   {fieldErrors.will_finish_at && (
@@ -766,8 +772,8 @@ export default function ProjectsPage() {
                       value={formData.company_uid}
                       onChange={handleFormChange}
                       className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground appearance-none focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.company_uid
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-border focus:ring-primary"
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-border focus:ring-primary"
                         }`}
                     >
                       <option value="">Select a company</option>
@@ -791,8 +797,8 @@ export default function ProjectsPage() {
                       <button
                         type="button"
                         className={`w-full px-3 sm:px-4 py-2 text-sm border rounded-lg bg-card text-foreground text-left flex items-center justify-between hover:bg-muted/30 transition focus:outline-none focus:ring-2 focus:border-transparent ${fieldErrors.buyer_uids
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-border focus:ring-primary"
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-border focus:ring-primary"
                           }`}
                       >
                         <span className={formData.buyer_uids.length > 0 ? "text-foreground" : "text-muted-foreground"}>

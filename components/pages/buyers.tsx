@@ -258,78 +258,84 @@ export default function BuyersPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredBuyers.map((buyer) => (
-          <Card key={buyer.id} className="border-border hover:shadow-lg transition-all relative group bg-gray-200">
-            {/* 3-dots Menu */}
-            <div className="absolute top-2 right-2 opacity-100 transition-opacity">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    className="text-red-600 cursor-pointer"
-                    onClick={() => {
-                      setSelectedBuyer(buyer)
-                      setDeleteModal(true)
-                    }}
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+      {filteredBuyers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <p className="text-7xl font-bold text-muted-foreground">No Buyers to show</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredBuyers.map((buyer) => (
+            <Card key={buyer.id} className="border-border hover:shadow-lg transition-all relative group bg-gray-200">
+              {/* 3-dots Menu */}
+              <div className="absolute top-2 right-2 opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-red-600 cursor-pointer"
+                      onClick={() => {
+                        setSelectedBuyer(buyer)
+                        setDeleteModal(true)
+                      }}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
-            <CardHeader className="pb-3 pr-10"> {/* Added pr-10 to avoid overlap with menu icon */}
-              <CardTitle className="text-base sm:text-lg line-clamp-2">{buyer.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 mb-4">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">City</p>
-                  <p className="text-xs sm:text-sm font-medium text-foreground">{buyer.city}</p>
+              <CardHeader className="pb-3 pr-10"> {/* Added pr-10 to avoid overlap with menu icon */}
+                <CardTitle className="text-base sm:text-lg line-clamp-2">{buyer.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">City</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground">{buyer.city}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Country</p>
+                    <p className="text-sm font-medium text-foreground">{buyer.country}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Country</p>
-                  <p className="text-sm font-medium text-foreground">{buyer.country}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-primary mb-4">
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded ${buyer.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                      }`}
+                  >
+                    {buyer.status}
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center justify-between pt-4 border-t border-primary mb-4">
-                <span
-                  className={`text-xs font-medium px-2 py-1 rounded ${buyer.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                    }`}
-                >
-                  {buyer.status}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
-                  onClick={() => handleOpenDetails(buyer)}
-                >
-                  <Eye className="w-3 sm:w-4 h-3 sm:h-4" />
-                  Details
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
-                  onClick={() => handleOpenSettings(buyer)}
-                >
-                  <SettingsIcon className="w-3 sm:w-4 h-3 sm:h-4" />
-                  Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
+                    onClick={() => handleOpenDetails(buyer)}
+                  >
+                    <Eye className="w-3 sm:w-4 h-3 sm:h-4" />
+                    Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white text-xs sm:text-sm"
+                    onClick={() => handleOpenSettings(buyer)}
+                  >
+                    <SettingsIcon className="w-3 sm:w-4 h-3 sm:h-4" />
+                    Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {detailsModal && selectedBuyer && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -366,8 +372,8 @@ export default function BuyersPage() {
                   <p className="text-xs text-muted-foreground mb-2">Status</p>
                   <span
                     className={`inline-block text-sm font-medium px-3 py-1 rounded ${selectedBuyer.status === "ACTIVE"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
                       }`}
                   >
                     {selectedBuyer.status}
