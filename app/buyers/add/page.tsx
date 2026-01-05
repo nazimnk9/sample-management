@@ -8,7 +8,7 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { getCookie, apiCall } from "@/lib/auth-utils"
+import { getCookie, apiCall, getCurrentUserRole } from "@/lib/auth-utils"
 import { useToast } from "@/hooks/use-toast"
 
 interface Company {
@@ -45,8 +45,13 @@ export default function AddBuyerPage() {
     return errorMessages.join(", ")
   }
 
+  const [userRole, setUserRole] = useState<string | null>(null)
+
   useEffect(() => {
-    const fetchCompanies = async () => {
+    const initializeData = async () => {
+      const role = await getCurrentUserRole()
+      setUserRole(role)
+
       try {
         const token = getCookie("access_token")
         if (!token) {
@@ -76,7 +81,7 @@ export default function AddBuyerPage() {
       }
     }
 
-    fetchCompanies()
+    initializeData()
   }, [router, toast])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -109,9 +114,15 @@ export default function AddBuyerPage() {
         return
       }
 
+      // Prepare payload
+      const payload: any = { ...formData }
+      if (userRole === "ADMINISTRATOR") {
+        delete payload.company_uid
+      }
+
       const response = await apiCall("/sample_manager/buyer/", {
         method: "POST",
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       const data = await response.json()
@@ -191,39 +202,38 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter buyer name"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name[0]}</p>}
                 </div>
 
                 {/* Company Selection */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-foreground mb-2">Company *</label>
-                  <select
-                    name="company_uid"
-                    value={formData.company_uid}
-                    onChange={handleChange}
-                    required
-                    disabled={companiesLoading}
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground ${
-                        formData.company_uid
-                          ? "text-foreground"
-                          : "text-foreground/50"
-                      } focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${
-                      fieldErrors.company_uid ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
-                  >
-                    <option value="">{companiesLoading ? "Loading companies..." : "Select a company"}</option>
-                    {companies.map((company) => (
-                      <option key={company.uid} value={company.uid}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldErrors.company_uid && <p className="text-sm text-red-600 mt-1">{fieldErrors.company_uid[0]}</p>}
-                </div>
+                {userRole !== "ADMINISTRATOR" && (
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">Company *</label>
+                    <select
+                      name="company_uid"
+                      value={formData.company_uid}
+                      onChange={handleChange}
+                      required
+                      disabled={companiesLoading}
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground ${formData.company_uid
+                        ? "text-foreground"
+                        : "text-foreground/50"
+                        } focus:outline-none focus:ring-2 focus:border-transparent transition disabled:opacity-50 ${fieldErrors.company_uid ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                        }`}
+                    >
+                      <option value="">{companiesLoading ? "Loading companies..." : "Select a company"}</option>
+                      {companies.map((company) => (
+                        <option key={company.uid} value={company.uid}>
+                          {company.name}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldErrors.company_uid && <p className="text-sm text-red-600 mt-1">{fieldErrors.company_uid[0]}</p>}
+                  </div>
+                )}
 
                 {/* Street */}
                 <div className="sm:col-span-2">
@@ -235,9 +245,8 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter street address"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.street ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.street ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.street && <p className="text-sm text-red-600 mt-1">{fieldErrors.street[0]}</p>}
                 </div>
@@ -252,9 +261,8 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter city"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.city ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.city ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.city && <p className="text-sm text-red-600 mt-1">{fieldErrors.city[0]}</p>}
                 </div>
@@ -269,9 +277,8 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter state"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.state ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.state ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.state && <p className="text-sm text-red-600 mt-1">{fieldErrors.state[0]}</p>}
                 </div>
@@ -286,9 +293,8 @@ export default function AddBuyerPage() {
                     onChange={handleChange}
                     required
                     placeholder="Enter country"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${
-                      fieldErrors.country ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
-                    }`}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.country ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                      }`}
                   />
                   {fieldErrors.country && <p className="text-sm text-red-600 mt-1">{fieldErrors.country[0]}</p>}
                 </div>

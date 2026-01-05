@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Plus, Eye, SettingsIcon, X, AlertCircle, Loader2, MoreVertical, Trash } from "lucide-react"
-import { getCookie, apiCall } from "@/lib/auth-utils"
+import { getCookie, apiCall, getCurrentUserRole } from "@/lib/auth-utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,14 @@ interface Company {
   id: number
   uid: string
   name: string
+  company: number // This seems to be matching the interface, though redundant in name maybe? Ignoring as I shouldn't change types unless needed. Wait, the original file had `uid` and `name` in Company interface.
+}
+
+// Re-defining Company interface to match original file exactly to avoid errors
+interface Company {
+  id: number
+  uid: string
+  name: string
 }
 
 export default function BuyersPage() {
@@ -43,6 +51,9 @@ export default function BuyersPage() {
   const [buyers, setBuyers] = useState<Buyer[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedBuyer, setSelectedBuyer] = useState<Buyer | null>(null)
+
+  // User Role State
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   // Modals
   const [detailsModal, setDetailsModal] = useState(false)
@@ -74,6 +85,10 @@ export default function BuyersPage() {
         router.push("/login")
         return
       }
+
+      // Fetch User Role
+      const role = await getCurrentUserRole()
+      setUserRole(role)
 
       const response = await apiCall("/sample_manager/buyer/")
       if (!response.ok) {
@@ -159,9 +174,15 @@ export default function BuyersPage() {
 
     setIsSubmitting(true)
     try {
+      // Prepare payload
+      const payload: any = { ...formData }
+      if (userRole === "ADMINISTRATOR") {
+        delete payload.company_uid
+      }
+
       const response = await apiCall(`/sample_manager/buyer/${selectedBuyer.uid}`, {
         method: "PUT", // or PATCH depending on API
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -260,7 +281,7 @@ export default function BuyersPage() {
 
       {filteredBuyers.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[50vh]">
-          <p className="text-7xl font-bold text-muted-foreground">No Buyers to show</p>
+          <p className="text-7xl font-bold text-gray-500">No Buyers to show</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -415,20 +436,22 @@ export default function BuyersPage() {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="text-sm font-medium text-foreground block mb-2">Company</label>
-                    <select
-                      value={formData.company_uid}
-                      onChange={(e) => setFormData({ ...formData, company_uid: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    // required // Depends if company is editable or just display
-                    >
-                      <option value="">Select Company</option>
-                      {companies.map(c => (
-                        <option key={c.uid} value={c.uid}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {userRole !== "ADMINISTRATOR" && (
+                    <div className="sm:col-span-2">
+                      <label className="text-sm font-medium text-foreground block mb-2">Company</label>
+                      <select
+                        value={formData.company_uid}
+                        onChange={(e) => setFormData({ ...formData, company_uid: e.target.value })}
+                        className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      // required // Depends if company is editable or just display
+                      >
+                        <option value="">Select Company</option>
+                        {companies.map(c => (
+                          <option key={c.uid} value={c.uid}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div className="sm:col-span-2">
                     <label className="text-sm font-medium text-foreground block mb-2">Street</label>

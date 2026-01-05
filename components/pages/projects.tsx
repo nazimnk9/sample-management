@@ -553,7 +553,7 @@ export default function ProjectsPage() {
       {/* Project Cards */}
       {filteredProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[50vh]">
-          <p className="text-7xl font-bold text-muted-foreground">No projects to show</p>
+          <p className="text-7xl font-bold text-gray-500">No projects to show</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

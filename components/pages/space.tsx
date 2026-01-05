@@ -1713,7 +1713,7 @@ export default function SpacePage() {
                     {spaces.length === 0 && samples.length === 0 && (
                         <div className="flex flex-col items-center justify-center min-h-[50vh]">
                             {/* <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" /> */}
-                            <p className="text-7xl font-bold text-muted-foreground">Nothing to show</p>
+                            <p className="text-7xl font-bold text-gray-500">Nothing to show</p>
                         </div>
                     )}
                 </>
