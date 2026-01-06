@@ -758,7 +758,7 @@ export default function SpacePage() {
                     handleSearchKeyDown(event)
                 }
             } else {
-                fetchSpacesAndSamples()
+
             }
 
         } catch (err) {
@@ -986,6 +986,7 @@ export default function SpacePage() {
             if (response.ok) {
                 const data = await response.json()
                 setSamples(Array.isArray(data) ? data : data.results || [])
+                setSpaces([])
                 setIsFiltered(true)
             }
         } catch (error) {

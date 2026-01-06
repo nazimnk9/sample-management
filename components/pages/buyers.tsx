@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { COUNTRIES } from "@/lib/constants"
 
 interface Buyer {
   id: number
@@ -485,12 +486,18 @@ export default function BuyersPage() {
 
                   <div>
                     <label className="text-sm font-medium text-foreground block mb-2">Country</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.country}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                       className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+                    >
+                      <option value="">Select country</option>
+                      {COUNTRIES.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>

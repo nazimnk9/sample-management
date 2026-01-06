@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { getCookie, apiCall, getCurrentUserRole } from "@/lib/auth-utils"
 import { useToast } from "@/hooks/use-toast"
+import { COUNTRIES } from "@/lib/constants"
 
 interface Company {
   id: number
@@ -286,16 +287,22 @@ export default function AddBuyerPage() {
                 {/* Country */}
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-foreground mb-2">Country *</label>
-                  <input
-                    type="text"
+                  <select
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
                     required
-                    placeholder="Enter country"
-                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.country ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-card text-foreground ${formData.country ? "text-foreground" : "text-muted-foreground/50"
+                      } focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.country ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
                       }`}
-                  />
+                  >
+                    <option value="">Select country</option>
+                    {COUNTRIES.map((country) => (
+                      <option key={country.name} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
                   {fieldErrors.country && <p className="text-sm text-red-600 mt-1">{fieldErrors.country[0]}</p>}
                 </div>
               </div>
