@@ -1641,12 +1641,12 @@ export default function SpacePage() {
                                             </div>
                                         </div>
 
-                                        <div className="relative overflow-hidden cursor-pointer" onClick={() => handleSampleDetailsClick(sample)}>
+                                        <div className="relative h-100 w-full overflow-hidden cursor-pointer flex items-center justify-center" onClick={() => handleSampleDetailsClick(sample)}>
                                             {sample.images && sample.images.length > 0 ? (
                                                 <img
                                                     src={sample.images[0].file || "/placeholder.svg"}
                                                     alt={sample.name}
-                                                    className="w-full h-full object-contain hover:scale-105 transition-transform"
+                                                    className="w-full h-full object-fixed hover:scale-110 transition-transform duration-300"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -2503,7 +2503,7 @@ export default function SpacePage() {
                                                             src={image.file || "/placeholder.svg"}
                                                             alt={image.file_name}
                                                             onClick={() => handleImageClick(index, sampleDetails.images)}
-                                                            className="w-full h-32 object-fixed rounded border border-border cursor-pointer hover:opacity-90 transition"
+                                                            className="w-full h-full object-fixed rounded border border-border cursor-pointer hover:opacity-90 transition"
                                                         />
                                                     ))}
                                                 </div>
