@@ -1615,7 +1615,7 @@ export default function SpacePage() {
                     {samples.length > 0 && (
                         <div className="mb-12">
                             <h2 className="text-lg font-semibold text-foreground mb-4">Samples</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                                 {samples.map((sample) => (
                                     <Card key={sample.uid} className="border-border hover:shadow-lg transition-all overflow-hidden group bg-gray-200 border-1 border-black/20">
                                         <div className="flex items-center justify-between p-3 border-b border-primary">
