@@ -1972,6 +1972,7 @@ export default function SpacePage() {
                                                     }}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
+                                                    <option value="">Select Category</option>
                                                     <option value="CIRCULAR_KNIT">CIRCULAR_KNIT</option>
                                                     <option value="FLAT_KNIT">FLAT_KNIT</option>
                                                     <option value="WOVEN">WOVEN</option>
@@ -1988,11 +1989,13 @@ export default function SpacePage() {
                                                 >
                                                     {sampleEditData.category === "WOVEN" ? (
                                                         <>
+                                                        <option value="">Select Sub Category</option>
                                                             <option value="DENIM">DENIM</option>
                                                             <option value="NON_DENIM">NON_DENIM</option>
                                                         </>
                                                     ) : (
                                                         <>
+                                                        <option value="">Select Sub Category</option>
                                                             <option value="MENS">MENS</option>
                                                             <option value="JR_LADIES">JR_LADIES</option>
                                                             <option value="WOMEN">WOMEN</option>
@@ -2029,6 +2032,7 @@ export default function SpacePage() {
                                                     onChange={(e) => setSampleEditData({ ...sampleEditData, size_range_type: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
+                                                    <option value="">Select Size Range Type</option>
                                                     <option value="LETTER_RANGE">LETTER_RANGE</option>
                                                     <option value="AGE_RANGE_YEAR">AGE_RANGE_YEAR</option>
                                                     <option value="AGE_RANGE_MONTH">AGE_RANGE_MONTH</option>
@@ -2162,6 +2166,7 @@ export default function SpacePage() {
                                                     onChange={(e) => setSampleEditData({ ...sampleEditData, weight_type: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
+                                                    <option value="">Select Weight Type</option>
                                                     <option value="GM">GM</option>
                                                     <option value="KG">KG</option>
                                                     <option value="GSM">GSM</option>
@@ -2176,6 +2181,7 @@ export default function SpacePage() {
                                                     onChange={(e) => setSampleEditData({ ...sampleEditData, types: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                                                 >
+                                                    <option value="">Select Sample Type</option>
                                                     <option value="DEVELOPMENT">DEVELOPMENT</option>
                                                     <option value="SALESMAN">SALESMAN</option>
                                                     <option value="STYLING">STYLING</option>
